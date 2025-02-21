@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique
+  email         String    @unique
+  password      String
+  role          Role      @default(USER)
+  reservations  Reservation[]
+  reviews       Review[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Book {
+  id            Int       @id @default(autoincrement())
+  title         String
+  author        String
+  description   String?
+  stock         Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  reservations  Reservation[]
+  reviews       Review[]
+}
+
+model Reservation {
+  id            Int                 @id @default(autoincrement())
+  userId        Int
+  bookId        Int
+  reservedAt    DateTime            @default(now())  // La date à laquelle la réservation a été faite
+  reservedUntil DateTime            // La date jusqu'à laquelle la réservation est valide
+  status        ReservationStatus   @default(PENDING)
+  user          User                @relation(fields: [userId], references: [id])
+  book          Book                @relation(fields: [bookId], references: [id])
+}
+
+model Review {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  bookId      Int
+  rating      Int       @default(0) 
+  comment     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+  book        Book      @relation(fields: [bookId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+}
+

@@ -1,8 +1,10 @@
-//Doit etre en debut de fichier pour charger les variables d'environnement
 import "dotenv/config";
 
-//importer les routes
-import routerExterne from "./routes.js";
+// Importer les routes
+import bookRoutes from "./routes/bookRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import reservationRoutes from "./routes/reservationRoutes.js"; // Ajout des routes reservation
+import reviewRoutes from "./routes/reviewRoutes.js"; // Ajout des routes review
 
 // Importation des fichiers et librairies
 import express, { json } from "express";
@@ -11,7 +13,7 @@ import compression from "compression";
 import cors from "cors";
 import cspOption from "./csp-options.js";
 
-// Crréation du serveur express
+// Création du serveur express
 const app = express();
 
 // Ajout de middlewares
@@ -20,20 +22,25 @@ app.use(compression());
 app.use(cors());
 app.use(json());
 
-//Middeleware integre a express pour gerer la partie static du serveur
-//le dossier 'public' est la partie statique de notre serveur
+// Middleware intégré à Express pour gérer la partie statique du serveur
 app.use(express.static("public"));
 
 // Ajout des routes
-app.use(routerExterne);
+app.use("/api/books", bookRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/reservations", reservationRoutes); // Ajout des routes de réservation
+app.use("/api/reviews", reviewRoutes); // Ajout des routes de review
 
-// Renvoyer une erreur 404 pour les routes non définies
+// Gestion des erreurs 404
 app.use((request, response) => {
- // Renvoyer simplement une chaîne de caractère indiquant que la page n'existe pas
- response.status(404).send(`${request.originalUrl} Route introuvable.`);
+ response
+  .status(404)
+  .json({ error: `${request.originalUrl} Route introuvable.` });
 });
 
-//Démarrage du serveur
-app.listen(process.env.PORT);
-console.info("Serveur démarré :");
-console.info(`http://localhost:${process.env.PORT}`);
+// Démarrage du serveur
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+ console.info("Serveur démarré :");
+ console.info(`http://localhost:${PORT}`);
+});
