@@ -1,131 +1,82 @@
-// controllers/userController.js
-import userModel from "../models/user.js"; // Utilisation de l'import ES6
+import * as userModel from "../models/user.js";
 
-// Inscription d'un utilisateur
+// Créer un utilisateur
 export const registerUser = async (req, res) => {
  try {
-  const { username, password, email, role } = req.body;
-  const user = await userModel.createUser(username, password, email, role);
+  console.log("Registering new user");
+  const user = await userModel.createUser();
+  console.log("User created:", user);
   res.status(201).json(user);
  } catch (error) {
-  res.status(500).json({ error: "Erreur lors de l'inscription" });
- }
-};
-
-// Connexion d'un utilisateur
-export const loginUser = async (req, res) => {
- try {
-  const { email, password } = req.body;
-  const isValid = await userModel.checkPassword(email, password);
-  if (!isValid) {
-   return res.status(401).json({ error: "Identifiants invalides" });
-  }
-  const user = await userModel.findUserByEmail(email);
-  // Générer un token JWT ici (utiliser jsonwebtoken)
-  const token = "JWT_TOKEN"; // Tu devras générer le vrai token
-  res.status(200).json({ token });
- } catch (error) {
-  res.status(500).json({ error: "Erreur lors de la connexion" });
- }
-};
-
-// Récupérer un utilisateur par son ID
-export const getUserById = async (req, res) => {
- try {
-  const { id } = req.params; // Récupérer l'ID de l'URL
-  const user = await userModel.findUserById(id); // Utiliser la méthode findUserById du modèle
-
-  if (!user) {
-   return res.status(404).json({ error: "Utilisateur non trouvé" });
-  }
-
-  res.status(200).json(user);
- } catch (error) {
+  console.error("Error registering user:", error);
   res
    .status(500)
-   .json({ error: "Erreur lors de la récupération de l'utilisateur" });
+   .json({ error: "Erreur lors de la création de l'utilisateur" });
  }
 };
 
-// Récupérer un utilisateur par son email
-export const getUserByEmail = async (req, res) => {
- try {
-  const email = req.params.email;
-  const user = await userModel.findUserByEmail(email);
-
-  if (!user) {
-   return res.status(404).json({ error: "Utilisateur non trouvé" });
-  }
-
-  res.status(200).json(user);
- } catch (error) {
-  res
-   .status(500)
-   .json({ error: "Erreur lors de la récupération de l'utilisateur" });
- }
-};
-
-// controllers/userController.js
+// Récupérer tous les utilisateurs
 export const getAllUsers = async (req, res) => {
  try {
-  const users = await userModel.findAllUsers(); // On essaie de récupérer tous les utilisateurs
-  if (!users || users.length === 0) {
-   return res.status(404).json({ error: "Aucun utilisateur trouvé" });
-  }
-  res.status(200).json(users); // Si tout va bien, on renvoie la liste des utilisateurs
+  console.log("Fetching all users");
+  const users = await userModel.getAllUsers();
+  console.log("Users retrieved:", users);
+  res.status(200).json(users);
  } catch (error) {
-  console.error("Erreur lors de la récupération des utilisateurs :", error); // Affichage détaillé de l'erreur
-  res.status(500).json({
-   error: "Erreur lors de la récupération des utilisateurs",
-   details: error.message,
-  });
+  console.error("Error fetching users:", error);
+  res
+   .status(500)
+   .json({ error: "Erreur lors de la récupération des utilisateurs" });
  }
 };
 
-// Mettre à jour un utilisateur par son ID
-export const updateUser = async (req, res) => {
+// Récupérer un utilisateur par ID
+export const getUserById = async (req, res) => {
+ const { id } = req.params;
  try {
-  const { id } = req.params; // Récupérer l'ID de l'URL
-  const { username, password, email, role } = req.body; // Récupérer les nouvelles données de l'utilisateur
-
-  // Vérifier si l'utilisateur existe
-  const user = await userModel.findUserById(id);
+  console.log("Fetching user by ID:", id);
+  const user = await userModel.getUserById(parseInt(id));
   if (!user) {
+   console.log("User not found:", id);
    return res.status(404).json({ error: "Utilisateur non trouvé" });
   }
+  console.log("User found:", user);
+  res.status(200).json(user);
+ } catch (error) {
+  console.error("Error fetching user:", error);
+  res
+   .status(500)
+   .json({ error: "Erreur lors de la récupération de l'utilisateur" });
+ }
+};
 
-  // Mettre à jour l'utilisateur
-  const updatedUser = await userModel.updateUser(id, {
-   username,
-   password,
-   email,
-   role,
-  });
-
+// Mettre à jour un utilisateur
+export const updateUser = async (req, res) => {
+ const { id } = req.params;
+ const { username } = req.body;
+ try {
+  console.log("Updating user with ID:", id, "New username:", username);
+  const updatedUser = await userModel.updateUser(parseInt(id), username);
+  console.log("User updated:", updatedUser);
   res.status(200).json(updatedUser);
  } catch (error) {
+  console.error("Error updating user:", error);
   res
    .status(500)
    .json({ error: "Erreur lors de la mise à jour de l'utilisateur" });
  }
 };
 
-// Supprimer un utilisateur par son ID
+// Supprimer un utilisateur
 export const deleteUser = async (req, res) => {
+ const { id } = req.params;
  try {
-  const { id } = req.params; // Récupérer l'ID de l'URL
-
-  // Vérifier si l'utilisateur existe
-  const user = await userModel.findUserById(id);
-  if (!user) {
-   return res.status(404).json({ error: "Utilisateur non trouvé" });
-  }
-
-  // Supprimer l'utilisateur
-  await userModel.deleteUser(id);
-
-  res.status(200).json({ message: "Utilisateur supprimé avec succès" });
+  console.log("Deleting user with ID:", id);
+  await userModel.deleteUser(parseInt(id));
+  console.log("User deleted:", id);
+  res.status(204).send();
  } catch (error) {
+  console.error("Error deleting user:", error);
   res
    .status(500)
    .json({ error: "Erreur lors de la suppression de l'utilisateur" });

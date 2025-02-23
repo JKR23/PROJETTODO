@@ -1,73 +1,93 @@
-// models/user.js
-import { prisma } from "../prismaClient.js"; // Import nommé
+import { PrismaClient } from "@prisma/client";
 
-// Fonction pour créer un utilisateur
-const createUser = async (username, password, email, role) => {
- const user = await prisma.user.create({
-  data: {
-   username,
-   password,
-   email,
-   role,
-  },
- });
- return user;
-};
+const prisma = new PrismaClient();
 
-// Fonction pour récupérer tous les utilisateurs
-const findAllUsers = async () => {
- const users = await prisma.user.findMany(); // Utilisation de la méthode findMany pour obtenir tous les utilisateurs
- return users;
-};
-
-// Fonction pour trouver un utilisateur par son ID
-const findUserById = async (id) => {
- const user = await prisma.user.findUnique({
-  where: { id: parseInt(id) }, // Assure-toi que l'ID est un entier
- });
- return user;
-};
-
-// Fonction pour trouver un utilisateur par son email
-const findUserByEmail = async (email) => {
- const user = await prisma.user.findUnique({
-  where: { email },
- });
- return user;
-};
-
-// Fonction pour vérifier le mot de passe
-const checkPassword = async (email, password) => {
- const user = await findUserByEmail(email);
- if (user && user.password === password) {
-  return true;
+// Créer un utilisateur
+export const createUser = async () => {
+ try {
+  console.log("Creating a new user");
+  const user = await prisma.user.create({
+   data: {
+    username: "Utilisateur1", // Utilisateur par défaut
+   },
+  });
+  console.log("User created successfully:", user);
+  return user;
+ } catch (error) {
+  console.error("Error creating user:", error);
+  throw new Error("Error creating user");
  }
- return false;
 };
 
-// Fonction pour mettre à jour un utilisateur
-const updateUser = async (id, data) => {
- const updatedUser = await prisma.user.update({
-  where: { id: parseInt(id) },
-  data,
- });
- return updatedUser;
+// Récupérer tous les utilisateurs
+export const getAllUsers = async () => {
+ try {
+  console.log("Fetching all users");
+  const users = await prisma.user.findMany();
+  console.log("Users retrieved:", users);
+  return users;
+ } catch (error) {
+  console.error("Error fetching users:", error);
+  throw new Error("Error fetching users");
+ }
 };
 
-// Fonction pour supprimer un utilisateur
-const deleteUser = async (id) => {
- await prisma.user.delete({
-  where: { id: parseInt(id) }, // Assure-toi que l'ID est un entier
- });
+// Récupérer un utilisateur par son ID
+export const getUserById = async (id) => {
+ try {
+  console.log("Fetching user by ID:", id);
+  const user = await prisma.user.findUnique({
+   where: { id },
+  });
+  console.log("User found:", user);
+  return user;
+ } catch (error) {
+  console.error("Error fetching user by ID:", id, error);
+  throw new Error("Error fetching user");
+ }
 };
 
-// Exportation par défaut
-export default {
- createUser,
- findAllUsers,
- findUserById,
- findUserByEmail,
- checkPassword,
- updateUser,
- deleteUser,
+// Récupérer un utilisateur par son email (ici username)
+export const getUserByEmail = async (email) => {
+ try {
+  console.log("Fetching user by email (username):", email);
+  const user = await prisma.user.findUnique({
+   where: { username: email },
+  });
+  console.log("User found:", user);
+  return user;
+ } catch (error) {
+  console.error("Error fetching user by email (username):", email, error);
+  throw new Error("Error fetching user by email");
+ }
+};
+
+// Mettre à jour un utilisateur
+export const updateUser = async (id, username) => {
+ try {
+  console.log("Updating user with ID:", id, "New username:", username);
+  const updatedUser = await prisma.user.update({
+   where: { id },
+   data: { username },
+  });
+  console.log("User updated successfully:", updatedUser);
+  return updatedUser;
+ } catch (error) {
+  console.error("Error updating user with ID:", id, error);
+  throw new Error("Error updating user");
+ }
+};
+
+// Supprimer un utilisateur
+export const deleteUser = async (id) => {
+ try {
+  console.log("Deleting user with ID:", id);
+  await prisma.user.delete({
+   where: { id },
+  });
+  console.log("User deleted successfully:", id);
+ } catch (error) {
+  console.error("Error deleting user with ID:", id, error);
+  throw new Error("Error deleting user");
+ }
 };

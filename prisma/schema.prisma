@@ -4,6 +4,7 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+// Configuration de la source de données et du générateur de client Prisma
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
@@ -13,61 +14,53 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Modèle pour l'Utilisateur unique (id = 1)
 model User {
-  id            Int       @id @default(autoincrement())
-  username      String    @unique
-  email         String    @unique
-  password      String
-  role          Role      @default(USER)
-  reservations  Reservation[]
-  reviews       Review[]
+  id            Int       @id @default(1) // L'utilisateur unique
+  username      String    @default("Utilisateur1") // Utilisateur par défaut
+  tasks         Task[]    // Tâches attribuées à cet utilisateur unique
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
 
-model Book {
-  id            Int       @id @default(autoincrement())
-  title         String
-  author        String
-  description   String?
-  stock         Int
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  reservations  Reservation[]
-  reviews       Review[]
+// Modèle pour une tâche (Task)
+model Task {
+  id            Int        @id @default(autoincrement()) // ID unique pour chaque tâche
+  title         String     // Titre de la tâche
+  description   String?    // Description optionnelle de la tâche
+  priority      Priority  @default(LOW) // Priorité de la tâche (Faible, Moyenne, Élevée)
+  deadline      DateTime  // Date limite de la tâche (timestamp)
+  status        Status    @default(TODO) // Statut de la tâche (À faire, En cours, etc.)
+  userId        Int       // L'utilisateur qui a créé la tâche (ID = 1)
+  user          User      @relation(fields: [userId], references: [id]) // Relation avec l'utilisateur
+  createdAt     DateTime  @default(now()) // Date de création de la tâche
+  updatedAt     DateTime  @updatedAt // Date de la dernière modification
+  history       History[] // Historique des modifications de cette tâche
 }
 
-model Reservation {
-  id            Int                 @id @default(autoincrement())
-  userId        Int
-  bookId        Int
-  reservedAt    DateTime            @default(now())  // La date à laquelle la réservation a été faite
-  reservedUntil DateTime            // La date jusqu'à laquelle la réservation est valide
-  status        ReservationStatus   @default(PENDING)
-  user          User                @relation(fields: [userId], references: [id])
-  book          Book                @relation(fields: [bookId], references: [id])
+// Modèle pour l'historique des modifications de tâches (History)
+model History {
+  id            Int       @id @default(autoincrement()) // ID de l'historique
+  taskId        Int       // Tâche concernée par la modification
+  task          Task      @relation(fields: [taskId], references: [id]) // Relation avec la tâche
+  modifiedAt    DateTime  @default(now()) // Date de la modification
+  modifiedBy    Int       // ID de l'utilisateur ayant modifié (ID = 1 pour ce projet)
+  action        String    // Action effectuée (création, modification, changement de statut)
+  oldStatus     Status?   // Ancien statut (si applicable)
+  newStatus     Status?   // Nouveau statut (si applicable)
 }
 
-model Review {
-  id          Int       @id @default(autoincrement())
-  userId      Int
-  bookId      Int
-  rating      Int       @default(0) 
-  comment     String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation(fields: [userId], references: [id])
-  book        Book      @relation(fields: [bookId], references: [id])
+// Enum pour les priorités de tâches
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
 }
 
-enum Role {
-  USER
-  ADMIN
+// Enum pour les statuts de tâches
+enum Status {
+  TODO // À faire
+  IN_PROGRESS // En cours
+  IN_REVIEW // En révision
+  DONE // Terminée
 }
-
-enum ReservationStatus {
-  PENDING
-  CONFIRMED
-  CANCELED
-}
-
