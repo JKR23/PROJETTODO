@@ -1,7 +1,9 @@
+//task.js
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Créer une nouvelle tâche
 // Créer une nouvelle tâche
 const createTask = async (title, description, priority, deadline, userId) => {
  try {
@@ -12,6 +14,8 @@ const createTask = async (title, description, priority, deadline, userId) => {
    deadline,
    userId,
   });
+
+  // Vérifier et ajouter un statut par défaut si aucun n'est fourni
   const task = await prisma.task.create({
    data: {
     title,
@@ -21,6 +25,7 @@ const createTask = async (title, description, priority, deadline, userId) => {
     userId,
    },
   });
+
   console.log("Task created successfully:", task);
   return task;
  } catch (error) {
@@ -62,6 +67,13 @@ const getTaskById = async (id) => {
 // Mettre à jour une tâche
 const updateTask = async (id, data) => {
  try {
+  console.log("staring update:", data.status);
+  const validStatuses = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
+  if (data.status && !validStatuses.includes(data.status)) {
+   console.error("invalid status:", data.status);
+   throw new Error("Statut invalide.");
+  }
+
   console.log("Updating task with ID:", id, "New data:", data);
   const updatedTask = await prisma.task.update({
    where: { id },

@@ -30,7 +30,7 @@ model Task {
   description   String?    // Description optionnelle de la tâche
   priority      Priority  @default(LOW) // Priorité de la tâche (Faible, Moyenne, Élevée)
   deadline      DateTime  // Date limite de la tâche (timestamp)
-  status        Status    @default(TODO) // Statut de la tâche (À faire, En cours, etc.)
+  status        Status    @default(TODO)// Statut de la tâche (À faire, En cours, etc.)
   userId        Int       // L'utilisateur qui a créé la tâche (ID = 1)
   user          User      @relation(fields: [userId], references: [id]) // Relation avec l'utilisateur
   createdAt     DateTime  @default(now()) // Date de création de la tâche

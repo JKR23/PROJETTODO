@@ -1,24 +1,43 @@
+//controllers/taskControllers.js
 import taskModel from "../models/task.js"; // Importation du modèle task
+
+// Controllers/taskControllers.js
+
+// Fonction pour formater la priorité
+const formatPriority = (priority) => {
+ const validPriorities = ["LOW", "MEDIUM", "HIGH"];
+ return validPriorities.includes(priority.toUpperCase())
+  ? priority.toUpperCase()
+  : "LOW"; // Défaut à "LOW" si invalide
+};
 
 // Créer une nouvelle tâche
 export const createTask = async (req, res) => {
  try {
   const { title, description, priority, deadline } = req.body;
   const userId = 1; // ID de l'utilisateur (en général, cela provient de l'authentification)
+
+  // Validation de la priorité
+  const validPriority = formatPriority(priority);
+
   console.log("Creating task with data:", {
    title,
    description,
-   priority,
+   priority: validPriority,
    deadline,
   });
+
+  // Appel au modèle avec tous les paramètres, y compris status
   const task = await taskModel.createTask(
    title,
    description,
-   priority,
+   validPriority, // Utiliser la priorité validée
    deadline,
    userId
   );
-  console.log("Task created:", task);
+
+  console.log("value status : ", task.status),
+   console.log("Task created:", task);
   res.status(201).json(task);
  } catch (error) {
   console.error("Error creating task:", error);
@@ -67,20 +86,13 @@ export const getTaskById = async (req, res) => {
  }
 };
 
-// Mettre à jour une tâche
 export const updateTask = async (req, res) => {
  try {
   let { id } = req.params;
-  const { title, description, priority, deadline } = req.body;
-  console.log("Updating task with ID:", id, "New data:", {
-   title,
-   description,
-   priority,
-   deadline,
-  });
+  const { title, description, priority, deadline, status } = req.body;
 
   // Convertir id en entier
-  id = parseInt(id); // ou utiliser Number(id)
+  id = parseInt(id);
 
   if (isNaN(id)) {
    return res
@@ -88,12 +100,33 @@ export const updateTask = async (req, res) => {
     .json({ error: "L'ID de la tâche doit être un entier valide." });
   }
 
-  const updatedTask = await taskModel.updateTask(id, {
+  // Vérification du statut
+  const validStatuses = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
+
+  // Vérification que `status` existe et est valide
+  if (status && !validStatuses.includes(status)) {
+   return res.status(400).json({ error: "Statut invalide." });
+  }
+
+  // Vérification si `status` est omis mais qu'on attend sa valeur
+  if (!status) {
+   return res.status(400).json({ error: "Le champ 'status' est requis." });
+  }
+
+  // Préparer les données à mettre à jour
+  let updatedData = {
    title,
    description,
    priority,
    deadline: new Date(deadline),
-  });
+   status: status, // Assurez-vous d'ajouter le status ici s'il est présent et valide
+  };
+
+  console.log("Updating task with the following data:", updatedData);
+
+  // Appeler la fonction de mise à jour dans le modèle
+  const updatedTask = await taskModel.updateTask(id, updatedData);
+
   console.log("Task updated:", updatedTask);
   res.status(200).json(updatedTask);
  } catch (error) {

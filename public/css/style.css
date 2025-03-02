@@ -1,5 +1,230 @@
+/* Empêche les barres de défilement globalement */
+html,
+body {
+ margin: 0;
+ padding: 0;
+ height: 100%; /* Garantit que le HTML et le body prennent toute la hauteur */
+ overflow: hidden; /* Cache les barres de défilement globales */
+}
+
+body {
+ font-family: Arial, sans-serif;
+ display: flex;
+ flex-direction: column;
+ justify-content: space-between;
+ align-items: center;
+ background-color: #f7f7f7;
+ min-height: 100vh; /* Garantit que la hauteur du body occupe toute la hauteur de la fenêtre */
+}
+
+header {
+ background-color: #29055b; /* Mauve foncé */
+ color: white;
+ width: 100%; /* L'entête occupe toute la largeur de l'écran */
+ padding: 40px;
+ text-align: center;
+ font-size: 24px;
+}
+
+main {
+ width: 80%;
+ padding: 20px;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ flex: 1; /* Permet à main de prendre tout l'espace restant entre le header et le footer */
+ overflow-y: auto; /* Permet au contenu de défiler si nécessaire */
+}
+
+#header-container {
+ display: flex;
+ justify-content: space-between; /* Aligne le titre et le bouton */
+ width: 100%;
+ align-items: center;
+ margin-bottom: 20px;
+}
+
 h1 {
- color: blue;
- font-size: large;
- font-weight: 800;
+ text-align: left;
+ margin: 0;
+ font-size: 28px;
+ width: 70%; /* Prend 70% de la largeur disponible pour que le bouton ne soit pas trop près */
+}
+
+#button-container {
+ display: flex;
+ justify-content: flex-end;
+ width: 30%; /* Le bouton prend 30% de la largeur de l'écran */
+}
+
+#add-button {
+ background-color: #29055b; /* Mauve foncé */
+ color: white;
+ border: none;
+ padding: 15px 30px;
+ font-size: 16px;
+ cursor: pointer;
+ border-radius: 5px;
+}
+
+#add-button:hover {
+ background-color: #5a1b87; /* Légèrement plus clair que le mauve foncé */
+}
+
+#columns {
+ display: flex;
+ justify-content: space-between;
+ width: 100%; /* Les 4 colonnes occupent toute la largeur disponible */
+ gap: 20px;
+ overflow-x: auto; /* Ajoute un scroll horizontal seulement si nécessaire */
+}
+
+.column {
+ background-color: #fff;
+ padding: 10px;
+ border-radius: 5px;
+ box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+ width: 23%; /* Chaque colonne occupe 23% de la largeur disponible */
+ min-height: 300px;
+ max-height: 500px; /* Définir une hauteur maximale pour éviter que la colonne ne soit trop grande */
+ overflow-y: auto; /* Activer le défilement vertical lorsque le contenu dépasse */
+ flex-grow: 1; /* S'assure que la colonne s'adapte bien à l'espace disponible */
+}
+
+.column h2 {
+ text-align: center;
+ position: sticky; /* Fixe l'en-tête en haut de la colonne */
+ top: 0; /* Aligne l'en-tête en haut de la colonne */
+ background-color: #fff; /* Fond blanc pour l'en-tête */
+ z-index: 1; /* S'assure que l'en-tête est au-dessus du contenu */
+}
+
+ul {
+ list-style-type: none;
+ padding: 0;
+}
+
+li {
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ padding: 10px 0;
+ margin: 5px 0;
+ border: 1px solid #ddd; /* Encadrement gris pour les tâches */
+ border-radius: 5px; /* Coins arrondis */
+ background-color: #fff; /* Fond blanc pour chaque tâche */
+ cursor: pointer; /* Change le curseur en main au survol */
+ transition: background-color 0.3s, transform 0.3s; /* Transition douce pour les changements */
+}
+
+li:hover {
+ background-color: #f0f0f0; /* Change de couleur au survol */
+ transform: scale(1.02); /* Effet de zoom léger au survol */
+}
+
+input[type="checkbox"] {
+ transform: scale(1.2);
+}
+
+footer {
+ width: 100%; /* Le pied de page prend toute la largeur */
+ text-align: center;
+ padding: 40px;
+ background-color: #29055b; /* Mauve foncé */
+ color: white;
+ position: relative;
+ bottom: 0; /* Le pied de page est collé en bas */
+}
+
+/* Nouveau style pour la colonne "IN_REVIEW" */
+#in-review-column {
+ background-color: #fff; /* Même couleur de fond que les autres colonnes */
+}
+
+#in-review-list {
+ background-color: #fff; /* Enlever tout fond spécifique */
+}
+
+/* Styles pour le modal (fenêtre pop-up) */
+.modal {
+ display: none; /* Masque le modal par défaut */
+ position: fixed; /* Reste à la même position même si on fait défiler la page */
+ z-index: 1; /* S'assure que le modal est au-dessus du contenu */
+ left: 0;
+ top: 0;
+ width: 100%; /* Prend toute la largeur de l'écran */
+ height: 100%; /* Prend toute la hauteur de l'écran */
+ background-color: rgba(0, 0, 0, 0.5); /* Fond sombre avec transparence */
+}
+
+.modal-content {
+ background-color: #fff;
+ padding: 20px;
+ border-radius: 10px;
+ width: 400px;
+ margin: 100px auto; /* Centrer le modal */
+ box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.close-btn {
+ color: #aaa;
+ font-size: 30px;
+ font-weight: bold;
+ position: absolute;
+ top: 10px;
+ right: 20px;
+ cursor: pointer;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+ color: black;
+ text-decoration: none;
+ cursor: pointer;
+}
+
+form {
+ display: flex;
+ flex-direction: column;
+}
+
+form div {
+ margin-bottom: 10px;
+}
+
+label {
+ font-weight: bold;
+}
+
+input,
+textarea,
+select {
+ padding: 10px;
+ margin-top: 3px;
+ width: 100%;
+ border: 1px solid #ddd;
+ border-radius: 5px;
+}
+
+button {
+ padding: 10px 15px;
+ background-color: #29055b; /* Mauve foncé */
+ color: white;
+ border: none;
+ border-radius: 5px;
+ cursor: pointer;
+}
+
+button:hover {
+ background-color: #5a1b87; /* Légèrement plus clair que le mauve foncé */
+}
+
+textarea {
+ resize: none; /* Empêche le redimensionnement du textarea */
+}
+
+#description,
+#title,
+#due-date {
+ width: 95%;
 }
