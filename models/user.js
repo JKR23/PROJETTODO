@@ -3,12 +3,13 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 // Créer un utilisateur
-export const createUser = async () => {
+export const createUser = async (username, password) => {
  try {
-  console.log("Creating a new user");
+  console.log("Creating a new user with username:", username);
   const user = await prisma.user.create({
    data: {
-    username: "Utilisateur1", // Utilisateur par défaut
+    username: username, // Utilisateur passé en paramètre
+    password: password, // Mot de passe en clair passé en paramètre
    },
   });
   console.log("User created successfully:", user);
@@ -78,7 +79,7 @@ export const updateUser = async (id, username) => {
  }
 };
 
-// Supprimer un utilisateur
+// Supprimer un utilisateur : model
 export const deleteUser = async (id) => {
  try {
   console.log("Deleting user with ID:", id);
@@ -86,6 +87,9 @@ export const deleteUser = async (id) => {
    where: { id },
   });
   console.log("User deleted successfully:", id);
+
+  // Optional: Log a confirmation message if you want to keep it here as well
+  console.log(`User with ID ${id} has been deleted successfully.`);
  } catch (error) {
   console.error("Error deleting user with ID:", id, error);
   throw new Error("Error deleting user");

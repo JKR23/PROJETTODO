@@ -1,4 +1,4 @@
-// Sélection des éléments du DOM
+// main.js
 const addButton = document.getElementById("add-button");
 const taskModal = document.getElementById("task-modal");
 const closeBtn = document.querySelector(".close-btn");
@@ -8,7 +8,6 @@ const inProgressList = document.getElementById("in-progress-list");
 const inReviewList = document.getElementById("in-review-list");
 const doneList = document.getElementById("done-list");
 
-// Ouverture et fermeture du modal
 addButton.addEventListener("click", () => {
  console.log("Bouton Ajouter cliqué");
  taskModal.style.display = "block";
@@ -17,26 +16,24 @@ addButton.addEventListener("click", () => {
 closeBtn.addEventListener("click", () => {
  console.log("fermeture form d'ajout tache");
  taskModal.style.display = "none";
- taskForm.reset(); // Réinitialiser le formulaire lors de la fermeture du modal
+ taskForm.reset();
 });
 
-// Fonction pour formater la date en ISO (yyyy-mm-dd)
+// Fonction pour formater la date
 const formatDateToISO = (dateString) => {
  const date = new Date(dateString);
  if (isNaN(date.getTime())) {
-  // Vérifie si la date est invalide
   console.error("Date invalide :", dateString);
-  return null; // Retourne null si la date est invalide
+  return null;
  }
 
- // Formater la date en ISO : 'yyyy-mm-dd'
  const year = date.getFullYear();
- const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Mois commence à 0
+ const month = (date.getMonth() + 1).toString().padStart(2, "0");
  const day = date.getDate().toString().padStart(2, "0");
  return `${year}-${month}-${day}`;
 };
 
-// Fonction pour créer un élément de tâche
+// Création de l'élément de tâche
 const createTaskElement = (task) => {
  const li = document.createElement("li");
  const description = document.createElement("span");
@@ -44,16 +41,15 @@ const createTaskElement = (task) => {
  description.textContent = task.title;
  li.appendChild(description);
 
- // Ajouter un événement pour changer le statut de la tâche
  li.addEventListener("click", async () => {
   let newStatus = "";
-  if (task.status === "DONE") {
+  if (task.status.name === "DONE") {
    newStatus = "TODO";
-  } else if (task.status === "TODO") {
-   newStatus = "IN_PROGRESS";
-  } else if (task.status === "IN_PROGRESS") {
-   newStatus = "IN_REVIEW"; // Nouveau statut "IN_REVIEW"
-  } else if (task.status === "IN_REVIEW") {
+  } else if (task.status.name === "TODO") {
+   newStatus = "IN PROGRESS";
+  } else if (task.status.name === "IN PROGRESS") {
+   newStatus = "IN REVIEW";
+  } else if (task.status.name === "IN REVIEW") {
    newStatus = "DONE";
   }
 
@@ -63,7 +59,7 @@ const createTaskElement = (task) => {
  return li;
 };
 
-// Fonction pour mettre à jour le statut de la tâche
+// Mettre à jour le statut de la tâche
 const updateTaskStatus = async (taskId, newStatus) => {
  try {
   await fetch(`http://localhost:5000/api/task/${taskId}`, {
@@ -74,77 +70,81 @@ const updateTaskStatus = async (taskId, newStatus) => {
    body: JSON.stringify({ status: newStatus }),
   });
 
-  // Rafraîchir la liste des tâches après mise à jour
   updateTaskList();
  } catch (error) {
   console.error("Erreur de mise à jour de statut", error);
  }
 };
 
-// Fonction pour afficher les tâches
+// Fonction pour récupérer et afficher les tâches dans les bonnes colonnes
 const updateTaskList = async () => {
  try {
-  const response = await fetch("http://localhost:5000/api/task");
-  if (response.ok) {
-   const tasks = await response.json();
+  // Récupérer les tâches pour chaque statut
+  const statuses = ["TODO", "IN PROGRESS", "IN REVIEW", "DONE"];
 
-   // Effacer les anciennes tâches
-   todoList.innerHTML = "";
-   inProgressList.innerHTML = "";
-   inReviewList.innerHTML = ""; // Nouvelle liste pour "IN_REVIEW"
-   doneList.innerHTML = "";
+  // Vider les colonnes avant de les remplir avec les nouvelles tâches
+  todoList.innerHTML = "";
+  inProgressList.innerHTML = "";
+  inReviewList.innerHTML = "";
+  doneList.innerHTML = "";
 
-   tasks.forEach((task) => {
-    const taskElement = createTaskElement(task);
-    switch (task.status) {
-     case "TODO":
-      todoList.appendChild(taskElement);
-      break;
-     case "IN_PROGRESS":
-      inProgressList.appendChild(taskElement);
-      break;
-     case "IN_REVIEW": // Nouvelle colonne "IN_REVIEW"
-      inReviewList.appendChild(taskElement);
-      break;
-     case "DONE":
-      doneList.appendChild(taskElement);
-      break;
-     default:
-      break;
-    }
-   });
-  } else {
-   console.error("Erreur lors de la récupération des tâches");
+  for (const status of statuses) {
+   const response = await fetch(
+    `http://localhost:5000/api/task/status/${status}`
+   );
+   if (response.ok) {
+    const tasks = await response.json();
+    tasks.forEach((task) => {
+     const taskElement = createTaskElement(task);
+     // Ajouter l'élément de tâche à la bonne colonne selon le statut
+     switch (task.status.name) {
+      case "TODO":
+       todoList.appendChild(taskElement);
+       break;
+      case "IN PROGRESS":
+       inProgressList.appendChild(taskElement);
+       break;
+      case "IN REVIEW":
+       inReviewList.appendChild(taskElement);
+       break;
+      case "DONE":
+       doneList.appendChild(taskElement);
+       break;
+      default:
+       break;
+     }
+    });
+   } else {
+    console.error("Erreur lors de la récupération des tâches");
+   }
   }
  } catch (error) {
   console.error("Erreur lors de la communication avec le serveur : ", error);
  }
 };
 
-// Fonction pour créer une nouvelle tâche
+// Formulaire d'ajout de tâche
 taskForm.addEventListener("submit", async (e) => {
- e.preventDefault(); // Empêcher l'envoi du formulaire
+ e.preventDefault();
 
  const formData = new FormData(taskForm);
  const dueDate = formatDateToISO(formData.get("due-date"));
 
- // Vérifie si la date est valide avant de procéder
  if (!dueDate) {
   console.error("Date invalide ou manquante");
-  return; // Ne pas envoyer la tâche si la date est invalide ou vide
+  return;
  }
 
  const taskData = {
   title: formData.get("title"),
   description: formData.get("description"),
   priority: formData.get("priority"),
-  deadline: dueDate, // Utiliser la date valide
+  deadline: dueDate,
   userId: formData.get("assignee"),
-  status: formData.get("status"), // Ajouter le statut de la tâche
+  status: formData.get("status"),
  };
 
  try {
-  // Envoi des données au back-end pour créer la tâche
   const response = await fetch("http://localhost:5000/api/task", {
    method: "POST",
    headers: {
@@ -156,9 +156,9 @@ taskForm.addEventListener("submit", async (e) => {
   if (response.ok) {
    const task = await response.json();
    console.log("Tâche ajoutée : ", task);
-   updateTaskList(); // Mettre à jour la liste après ajout
-   taskModal.style.display = "none"; // Fermer le modal après ajout
-   taskForm.reset(); // Réinitialiser le formulaire après ajout
+   updateTaskList();
+   taskModal.style.display = "none";
+   taskForm.reset();
   } else {
    const errorData = await response.json();
    console.error("Erreur lors de l'ajout de la tâche : ", errorData.error);
@@ -168,5 +168,5 @@ taskForm.addEventListener("submit", async (e) => {
  }
 });
 
-// Appel initial pour charger les tâches
+// Initialiser la liste des tâches lors du chargement de la page
 updateTaskList();

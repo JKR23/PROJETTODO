@@ -1,57 +1,72 @@
-//controllers/taskControllers.js
-import taskModel from "../models/task.js"; // Importation du modèle task
+// taskController.js
+import taskModel from "../models/task.js";
+import * as historyModel from "../models/history.js";
 
-// Controllers/taskControllers.js
-
-// Fonction pour formater la priorité
-const formatPriority = (priority) => {
- const validPriorities = ["LOW", "MEDIUM", "HIGH"];
- return validPriorities.includes(priority.toUpperCase())
-  ? priority.toUpperCase()
-  : "LOW"; // Défaut à "LOW" si invalide
-};
-
-// Créer une nouvelle tâche
 export const createTask = async (req, res) => {
  try {
-  const { title, description, priority, deadline } = req.body;
-  const userId = 1; // ID de l'utilisateur (en général, cela provient de l'authentification)
+  const { title, description, priorityId, deadline, statusId, userId } =
+   req.body;
 
-  // Validation de la priorité
-  const validPriority = formatPriority(priority);
-
-  console.log("Creating task with data:", {
+  console.log("Received task data for creation:", {
    title,
    description,
-   priority: validPriority,
+   priorityId,
    deadline,
+   statusId,
+   userId,
   });
 
-  // Appel au modèle avec tous les paramètres, y compris status
+  const validPriorityId = parseInt(priorityId, 10);
+  const validStatusId = parseInt(statusId, 10);
+
+  console.log(
+   `Validating priority ID: ${validPriorityId}, status ID: ${validStatusId}`
+  );
+
+  if (isNaN(validPriorityId) || isNaN(validStatusId)) {
+   console.error(
+    `Invalid priority ID or status ID. Received: priority=${priorityId}, status=${statusId}`
+   );
+   return res.status(400).json({ error: "Invalid priority or status ID" });
+  }
+
+  console.log("Calling taskModel.createTask with the following parameters:", {
+   title,
+   description,
+   validPriorityId,
+   validStatusId,
+   deadline,
+   userId,
+  });
+
   const task = await taskModel.createTask(
    title,
    description,
-   validPriority, // Utiliser la priorité validée
+   validPriorityId,
+   validStatusId,
    deadline,
    userId
   );
 
-  console.log("value status : ", task.status),
-   console.log("Task created:", task);
+  console.log("Task created successfully:", task);
   res.status(201).json(task);
  } catch (error) {
   console.error("Error creating task:", error);
-  res.status(500).json({ error: "Erreur lors de la création de la tâche" });
+  res.status(500).json({
+   error: error.message || "Erreur lors de la création de la tâche",
+  });
  }
 };
 
-// Récupérer toutes les tâches de l'utilisateur
 export const getTasks = async (req, res) => {
  try {
-  const userId = 1; // ID de l'utilisateur (en général, cela provient de l'authentification)
-  console.log("Fetching tasks for user ID:", userId);
-  const tasks = await taskModel.getAllTasksByUser(userId);
+  console.log("Fetching all tasks...");
+
+  // Appel de la méthode qui récupère toutes les tâches, sans besoin de userId
+  const tasks = await taskModel.getAllTasks(); // On appelle la méthode getAllTasks sans userId
   console.log("Tasks retrieved:", tasks);
+
+  // Répondre avec les tâches récupérées
   res.status(200).json(tasks);
  } catch (error) {
   console.error("Error fetching tasks:", error);
@@ -64,8 +79,7 @@ export const getTaskById = async (req, res) => {
   let { id } = req.params;
   console.log("Fetching task by ID:", id);
 
-  // Convert the ID to an integer
-  id = parseInt(id, 10); // or use Number(id)
+  id = parseInt(id, 10);
 
   if (isNaN(id)) {
    return res
@@ -89,9 +103,9 @@ export const getTaskById = async (req, res) => {
 export const updateTask = async (req, res) => {
  try {
   let { id } = req.params;
-  const { title, description, priority, deadline, status } = req.body;
+  const { title, description, priorityId, statusId, userId, deadline } =
+   req.body;
 
-  // Convertir id en entier
   id = parseInt(id);
 
   if (isNaN(id)) {
@@ -100,34 +114,42 @@ export const updateTask = async (req, res) => {
     .json({ error: "L'ID de la tâche doit être un entier valide." });
   }
 
-  // Vérification du statut
-  const validStatuses = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
-
-  // Vérification que `status` existe et est valide
-  if (status && !validStatuses.includes(status)) {
-   return res.status(400).json({ error: "Statut invalide." });
+  if (isNaN(userId)) {
+   return res
+    .status(400)
+    .json({ error: "L'ID de l'utilisateur doit être un entier valide." });
   }
 
-  // Vérification si `status` est omis mais qu'on attend sa valeur
-  if (!status) {
-   return res.status(400).json({ error: "Le champ 'status' est requis." });
+  console.log(`Updating task ID: ${id} for user ID: ${userId}`);
+
+  const statusExists = await taskModel.checkStatusExists(statusId);
+  const priorityExists = await taskModel.checkPriorityExists(priorityId);
+
+  if (!statusExists) {
+   return res.status(400).json({ error: "Le statusId fourni n'existe pas." });
   }
 
-  // Préparer les données à mettre à jour
-  let updatedData = {
+  if (!priorityExists) {
+   return res.status(400).json({ error: "Le priorityId fourni n'existe pas." });
+  }
+
+  const updatedData = {
    title,
    description,
-   priority,
+   priorityId,
+   statusId,
+   userId,
    deadline: new Date(deadline),
-   status: status, // Assurez-vous d'ajouter le status ici s'il est présent et valide
   };
 
   console.log("Updating task with the following data:", updatedData);
 
-  // Appeler la fonction de mise à jour dans le modèle
   const updatedTask = await taskModel.updateTask(id, updatedData);
 
-  console.log("Task updated:", updatedTask);
+  console.log("Task updated successfully:", updatedTask);
+
+  await historyModel.createHistory(updatedTask.id, userId, "UPDATE");
+
   res.status(200).json(updatedTask);
  } catch (error) {
   console.error("Error updating task:", error);
@@ -135,13 +157,31 @@ export const updateTask = async (req, res) => {
  }
 };
 
-// Supprimer une tâche
 export const deleteTask = async (req, res) => {
  try {
-  const { id } = req.params;
-  console.log("Deleting task with ID:", id);
+  let { id } = req.params;
+
+  id = parseInt(id, 10);
+
+  console.log(`Attempting to delete task with ID: ${id}`);
+
+  const task = await taskModel.getTaskById(id);
+
+  if (!task) {
+   console.log(`Task with ID ${id} not found.`);
+   return res.status(404).json({ error: "Tâche non trouvée" });
+  }
+
+  console.log(`Creating history for task ID: ${task.id} deletion.`);
+
+  await historyModel.createHistory(task.id, task.userId, "DELETE");
+
+  console.log(`Deleting task with ID: ${task.id}`);
+
   await taskModel.deleteTask(id);
-  console.log("Task deleted:", id);
+
+  console.log(`Task with ID ${id} deleted successfully.`);
+
   res.status(200).json({ message: "Tâche supprimée avec succès" });
  } catch (error) {
   console.error("Error deleting task:", error);
@@ -149,32 +189,74 @@ export const deleteTask = async (req, res) => {
  }
 };
 
-// Récupérer les tâches par statut
-export const getTasksByStatus = async (req, res) => {
+//controller
+export const getTasksByStatusName = async (req, res) => {
  try {
+  // Récupération du statut à partir des paramètres de la requête
   const { status } = req.params;
   console.log("Fetching tasks with status:", status);
 
-  // Vérification si le statut est valide
+  // Vérification de la validité du statut
   const validStatuses = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
   if (!validStatuses.includes(status)) {
+   console.log(`Statut invalide reçu : ${status}`);
    return res.status(400).json({ error: "Statut invalide." });
   }
 
-  const userId = 1; // ID de l'utilisateur (en général, cela provient de l'authentification)
-  const tasks = await taskModel.getTasksByStatus(userId, status);
+  console.log(`Statut ${status} valide.`);
+
+  // Récupération des tâches depuis le modèle en filtrant uniquement par statut
+  const tasks = await taskModel.getTasksByStatusName(status);
 
   if (tasks.length === 0) {
-   console.log(`No tasks found for status: ${status}`);
+   console.log(`Aucune tâche trouvée pour le statut: ${status}`);
    return res
     .status(404)
     .json({ message: "Aucune tâche trouvée pour ce statut." });
   }
 
-  console.log(`Tasks with status ${status} retrieved:`, tasks);
+  // Log des tâches récupérées
+  console.log(`Tâches avec le statut ${status} récupérées:`, tasks);
+
+  // Répondre avec les tâches récupérées
   res.status(200).json(tasks);
  } catch (error) {
-  console.error("Error fetching tasks by status:", error);
+  // Log d'erreur
+  console.error("Erreur lors de la récupération des tâches par statut:", error);
+  res
+   .status(500)
+   .json({ error: "Erreur lors de la récupération des tâches par statut" });
+ }
+};
+
+export const getTasksByIdStatus = async (req, res) => {
+ try {
+  const { statusId } = req.params;
+
+  console.log(`Fetching tasks for status ID: ${statusId}`);
+
+  if (isNaN(statusId)) {
+   return res
+    .status(400)
+    .json({ error: "Le statusId doit être un entier valide." });
+  }
+
+  const tasks = await taskModel.getTasksByIdStatus(parseInt(statusId));
+
+  if (tasks.length === 0) {
+   console.log(`Aucune tâche trouvée pour le statut ID: ${statusId}`);
+   return res
+    .status(404)
+    .json({ message: "Aucune tâche trouvée pour ce statut." });
+  }
+
+  console.log(`Tâches trouvées avec le statut ID ${statusId}:`, tasks);
+  res.status(200).json(tasks);
+ } catch (error) {
+  console.error(
+   "Erreur lors de la récupération des tâches par statut ID:",
+   error
+  );
   res
    .status(500)
    .json({ error: "Erreur lors de la récupération des tâches par statut" });

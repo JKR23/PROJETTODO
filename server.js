@@ -1,6 +1,8 @@
 import "dotenv/config";
 
 // Importer les routes
+import statusRoutes from "./routes/statusRoutes.js";
+import priorityRoutes from "./routes/priorityRoutes.js";
 import historyRoutes from "./routes/historyRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js"; // Ajout des routes task
@@ -25,6 +27,8 @@ app.use(json());
 app.use(express.static("public"));
 
 // Ajout des routes
+app.use("/api/status", statusRoutes);
+app.use("/api/priority", priorityRoutes);
 app.use("/api/history", historyRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/task", taskRoutes); // Ajout des routes de réservation

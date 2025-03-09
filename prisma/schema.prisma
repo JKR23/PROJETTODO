@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 // Configuration de la source de données et du générateur de client Prisma
 datasource db {
   provider = "sqlite"
@@ -16,8 +10,9 @@ generator client {
 
 // Modèle pour l'Utilisateur unique (id = 1)
 model User {
-  id            Int       @id @default(1) // L'utilisateur unique
+  id            Int       @id @default(autoincrement()) // L'utilisateur unique
   username      String    @default("Utilisateur1") // Utilisateur par défaut
+  password      String    @default("1234")
   tasks         Task[]    // Tâches attribuées à cet utilisateur unique
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -28,39 +23,40 @@ model Task {
   id            Int        @id @default(autoincrement()) // ID unique pour chaque tâche
   title         String     // Titre de la tâche
   description   String?    // Description optionnelle de la tâche
-  priority      Priority  @default(LOW) // Priorité de la tâche (Faible, Moyenne, Élevée)
-  deadline      DateTime  // Date limite de la tâche (timestamp)
-  status        Status    @default(TODO)// Statut de la tâche (À faire, En cours, etc.)
+  priorityId    Int       @default(1) // Clé étrangère vers le modèle Priority, valeur par défaut 1
+  statusId      Int       @default(1) // Clé étrangère vers le modèle Status, valeur par défaut 1
   userId        Int       // L'utilisateur qui a créé la tâche (ID = 1)
-  user          User      @relation(fields: [userId], references: [id]) // Relation avec l'utilisateur
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade) // Relation avec l'utilisateur, Cascade
   createdAt     DateTime  @default(now()) // Date de création de la tâche
   updatedAt     DateTime  @updatedAt // Date de la dernière modification
-  history       History[] // Historique des modifications de cette tâche
+  history       History[] // Historique des modifications de cette tâche, Cascade supprimé ici
+  deadline      DateTime? // Date limite de la tâche (optionnelle)
+
+  // Relations avec les modèles Priority et Status
+  priority      Priority  @relation(fields: [priorityId], references: [id], onDelete: Cascade) // Cascade delete
+  status        Status    @relation(fields: [statusId], references: [id], onDelete: Cascade) // Cascade delete
 }
 
 // Modèle pour l'historique des modifications de tâches (History)
 model History {
-  id            Int       @id @default(autoincrement()) // ID de l'historique
-  taskId        Int       // Tâche concernée par la modification
-  task          Task      @relation(fields: [taskId], references: [id]) // Relation avec la tâche
-  modifiedAt    DateTime  @default(now()) // Date de la modification
-  modifiedBy    Int       // ID de l'utilisateur ayant modifié (ID = 1 pour ce projet)
-  action        String    // Action effectuée (création, modification, changement de statut)
-  oldStatus     Status?   // Ancien statut (si applicable)
-  newStatus     Status?   // Nouveau statut (si applicable)
+  id          Int       @id @default(autoincrement()) // ID de l'historique
+  taskId      Int       // Tâche concernée par la modification
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade) // Relation avec la tâche, Cascade
+  modifiedAt  DateTime  @default(now()) // Date de la modification
+  modifiedBy  Int       // ID de l'utilisateur ayant modifié (ID = 1 pour ce projet)
+  action      String?
 }
 
-// Enum pour les priorités de tâches
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
+// Modèle pour les priorités de tâches (Priority)
+model Priority {
+  id     Int      @id @default(autoincrement()) // ID unique pour chaque priorité
+  name   String   @unique // Nom de la priorité (Faible, Moyenne, Élevée)
+  tasks  Task[]   // Liste des tâches associées à cette priorité
 }
 
-// Enum pour les statuts de tâches
-enum Status {
-  TODO // À faire
-  IN_PROGRESS // En cours
-  IN_REVIEW // En révision
-  DONE // Terminée
+// Modèle pour les statuts de tâches (Status)
+model Status {
+  id     Int      @id @default(autoincrement()) // ID unique pour chaque statut
+  name   String   @unique // Nom du statut (TODO, IN_PROGRESS, etc.)
+  tasks  Task[]   // Liste des tâches associées à ce statut
 }

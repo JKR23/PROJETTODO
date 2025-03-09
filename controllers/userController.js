@@ -4,8 +4,11 @@ import * as userModel from "../models/user.js";
 // Créer un utilisateur
 export const registerUser = async (req, res) => {
  try {
-  console.log("Registering new user");
-  const user = await userModel.createUser();
+  const { username, password } = req.body; // On attend que le corps de la requête contienne ces informations
+
+  // Créer l'utilisateur avec le mot de passe en clair
+  console.log("Registering new user with username:", username);
+  const user = await userModel.createUser(username, password); // Passer le mot de passe en clair
   console.log("User created:", user);
   res.status(201).json(user);
  } catch (error) {
@@ -68,18 +71,18 @@ export const updateUser = async (req, res) => {
  }
 };
 
-// Supprimer un utilisateur
+// Supprimer un utilisateur : controller
 export const deleteUser = async (req, res) => {
  const { id } = req.params;
  try {
   console.log("Deleting user with ID:", id);
   await userModel.deleteUser(parseInt(id));
   console.log("User deleted:", id);
-  res.status(204).send();
+
+  // Send success response with message
+  res.status(200).json({ message: `User with ID ${id} deleted successfully.` });
  } catch (error) {
   console.error("Error deleting user:", error);
-  res
-   .status(500)
-   .json({ error: "Erreur lors de la suppression de l'utilisateur" });
+  res.status(500).json({ error: "Error deleting the user" });
  }
 };
