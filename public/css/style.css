@@ -77,6 +77,7 @@ h1 {
  width: 100%; /* Les 4 colonnes occupent toute la largeur disponible */
  gap: 20px;
  overflow-x: auto; /* Ajoute un scroll horizontal seulement si nécessaire */
+ /*border: 2px solid #29055b;*/
 }
 
 .column {
@@ -84,7 +85,7 @@ h1 {
  padding: 10px;
  border-radius: 5px;
  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
- width: 23%; /* Chaque colonne occupe 23% de la largeur disponible */
+ width: 24%; /* Chaque colonne occupe 24% de la largeur disponible */
  min-height: 300px;
  max-height: 500px; /* Définir une hauteur maximale pour éviter que la colonne ne soit trop grande */
  overflow-y: auto; /* Activer le défilement vertical lorsque le contenu dépasse */
@@ -227,4 +228,51 @@ textarea {
 #title,
 #due-date {
  width: 95%;
+}
+
+#error-msg {
+ font-size: 12px; /* Réduit la taille du texte */
+ color: red; /* Définit la couleur du texte en rouge */
+ font-style: italic; /* Met le texte en italique */
+ margin-top: 5px; /* Ajoute un petit espace au-dessus du message d'erreur */
+}
+
+#error-msg-date {
+ font-size: 12px; /* Réduit la taille du texte */
+ color: red; /* Définit la couleur du texte en rouge */
+ font-style: italic; /* Met le texte en italique */
+ margin-top: 5px; /* Ajoute un petit espace au-dessus du message d'erreur */
+}
+
+header {
+ background-color: #29055b; /* Mauve foncé */
+ color: white;
+ width: 100%;
+ padding: 40px;
+ text-align: center;
+ font-size: 24px;
+}
+
+#header-content {
+ display: flex;
+ justify-content: space-between; /* Aligne le titre à gauche et les liens à droite */
+ align-items: center;
+ width: 100%;
+}
+
+#header-title {
+ padding-left: 40px;
+ font-size: 24px;
+}
+
+#header-links a {
+ padding: 40px;
+ color: white;
+ text-decoration: none;
+ margin-left: 20px;
+ font-size: 18px;
+}
+
+#header-links a:hover {
+ text-decoration: underline;
 }

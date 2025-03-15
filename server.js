@@ -8,6 +8,7 @@ import userRoutes from "./routes/userRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js"; // Ajout des routes task
 
 // Importation des fichiers et librairies
+import { engine } from "express-handlebars";
 import express, { json } from "express";
 import helmet from "helmet";
 import compression from "compression";
@@ -16,6 +17,9 @@ import cspOption from "./csp-options.js";
 
 // Création du serveur express
 const app = express();
+app.engine("handlebars", engine()); //Pour informer express que l'on utilise handlebars
+app.set("view engine", "handlebars"); //Pour dire a express que le moteur de rendu est handlebars
+app.set("views", "./views"); //Pour dire a express ou se trouvent les vues
 
 // Ajout de middlewares
 app.use(helmet(cspOption));
@@ -33,8 +37,34 @@ app.use("/api/history", historyRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/task", taskRoutes); // Ajout des routes de réservation
 
+//route default
+app.get("/", (req, res) => {
+ res.render("index", {
+  titre: "TODO App",
+  styles: ["css/style.css"],
+  scripts: ["./js/main.js", "./js/validation.js"],
+ });
+});
+
+app.get("/accueil", (req, res) => {
+ res.render("index", {
+  titre: "TODO App",
+  styles: ["css/style.css"],
+  scripts: ["./js/main.js", "./js/validation.js"],
+ });
+});
+
+app.get("/history", (req, res) => {
+ res.render("history", {
+  titre: "TODO App",
+  styles: ["css/style.css"],
+  scripts: ["./js/main.js"],
+ });
+});
+
 // Gestion des erreurs 404
 app.use((request, response) => {
+ console.log(`Route non trouvée : ${request.originalUrl}`);
  response
   .status(404)
   .json({ error: `${request.originalUrl} Route introuvable.` });

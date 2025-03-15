@@ -1,3 +1,5 @@
+//routes/priorityRoutes.js
+
 import express from "express"; // Utilisation de l'import ES6
 import {
  createPriority,
