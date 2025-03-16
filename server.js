@@ -62,6 +62,22 @@ app.get("/history", (req, res) => {
  });
 });
 
+app.get("/status", (req, res) => {
+ res.render("status", {
+  titre: "TODO App",
+  styles: ["css/style.css"],
+  scripts: ["./js/main.js"],
+ });
+});
+
+app.get("/priority", (req, res) => {
+ res.render("priority", {
+  titre: "TODO App",
+  styles: ["css/style.css"],
+  scripts: ["./js/main.js"],
+ });
+});
+
 // Gestion des erreurs 404
 app.use((request, response) => {
  console.log(`Route non trouvée : ${request.originalUrl}`);
