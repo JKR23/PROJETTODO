@@ -1,6 +1,8 @@
-// prismaClient.js
-import { PrismaClient } from "@prisma/client"; // Utilisation de 'import'
+// Importation de PrismaClient depuis le package @prisma/client
+import { PrismaClient } from "@prisma/client";
 
+// Création d'une instance de PrismaClient pour interagir avec la base de données
 const prisma = new PrismaClient();
 
-export { prisma }; // Utilisation de 'export' pour l'exportation nommée
+// Exportation de l'instance `prisma` pour l'utiliser dans d'autres fichiers
+export { prisma };
