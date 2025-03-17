@@ -1,10 +1,15 @@
-//./validation.js
-// verifier si la description est valide
-export const isTitleValid = (title) =>
- title && typeof title === "string" && title.length >= 5 && title.length <= 20;
+// validation.js
+// Vérifier si le titre et la description sont valides
 
-export const isDescriptionValid = (description) =>
- description &&
- typeof description === "string" &&
- description.length >= 5 &&
- description.length <= 50;
+export const isTitleValid = (title) => {
+  if (typeof title !== "string") return false;
+  const trimmedTitle = title.trim();
+  return trimmedTitle.length >= 5 && trimmedTitle.length <= 20;
+};
+
+export const isDescriptionValid = (description) => {
+  if (typeof description !== "string") return false;
+  const trimmedDescription = description.trim();
+  return trimmedDescription.length >= 5 && trimmedDescription.length <= 50;
+};
+
