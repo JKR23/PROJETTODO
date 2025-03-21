@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../prismaClient.js";
 
 // Créer un historique pour une tâche
-export const createHistory = async (taskId, modifiedBy, action) => {
+export const createHistory = async (taskId, modifiedBy, action, details = "") => {
  try {
   console.log("Creating history for task ID:", taskId);
   const history = await prisma.history.create({
@@ -11,6 +9,7 @@ export const createHistory = async (taskId, modifiedBy, action) => {
     taskId,
     modifiedBy,
     action,
+    details,
    },
   });
   console.log("History created successfully:", history);

@@ -1,7 +1,5 @@
 //taskModel.js
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../prismaClient.js";
 
 // Fonction pour vérifier si l'utilisateur existe
 const checkUserExists = async (userId) => {
@@ -82,13 +80,19 @@ const createTask = async (
   }
 
   // Si tout est valide, procéder à la création de la tâche
+  // S'assurer que deadline est un objet Date valide
+  let deadlineDate = deadline;
+  if (!(deadline instanceof Date) && deadline) {
+   deadlineDate = new Date(deadline);
+  }
+  
   const task = await prisma.task.create({
    data: {
     title,
     description,
     priorityId,
     statusId,
-    deadline: new Date(deadline),
+    deadline: deadlineDate, // Stocker directement l'objet Date
     userId,
    },
   });
@@ -154,13 +158,19 @@ const updateTask = async (id, data) => {
    throw new Error("Le priorityId fourni n'existe pas.");
   }
 
+  // S'assurer que deadline est un objet Date valide
+  let deadlineDate = data.deadline;
+  if (!(data.deadline instanceof Date) && data.deadline) {
+   deadlineDate = new Date(data.deadline);
+  }
+
   // Préparer les données à mettre à jour
   const updatedData = {
    title: data.title,
    description: data.description,
    priorityId: data.priorityId,
    statusId: data.statusId,
-   deadline: new Date(data.deadline),
+   deadline: deadlineDate, // Stocker directement l'objet Date
    userId: data.userId,
   };
 
@@ -214,12 +224,22 @@ const getTasksByStatusName = async (statusName) => {
    `Début de la récupération des tâches avec le statut: ${statusName}`
   );
 
+  // Récupération du statut par son nom
+  const status = await prisma.status.findFirst({
+   where: {
+    name: statusName,
+   },
+  });
+
+  if (!status) {
+   console.log(`Statut non trouvé: ${statusName}`);
+   return [];
+  }
+
   // Récupération des tâches dans la base de données
   const tasks = await prisma.task.findMany({
    where: {
-    status: {
-     name: statusName, // On filtre les tâches selon le nom du statut dans la table 'Status'
-    },
+    statusId: status.id,
    },
    include: {
     status: true, // Inclure les informations sur le statut, si nécessaire
@@ -262,7 +282,7 @@ const getTasksByIdStatus = async (statusId) => {
  } catch (error) {
   console.error(
    "Erreur lors de la récupération des tâches par statut pour l'utilisateur ID:",
-   userId,
+   statusId,
    error
   );
   throw new Error("Erreur lors de la récupération des tâches par statut");

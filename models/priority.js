@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import prisma from "../prismaClient.js";
 
 // Créer une nouvelle priorité
 const createPriority = async (name) => {

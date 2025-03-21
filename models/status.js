@@ -1,7 +1,5 @@
 //models/status
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../prismaClient.js";
 
 // Créer un nouveau statut
 const createStatus = async (name) => {

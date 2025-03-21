@@ -1,33 +1,48 @@
 /* Empêche les barres de défilement globalement */
+:root {
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --secondary: #6b7280;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;    
+    --light: #f9fafb;
+    --dark: #111827;
+    --radius: 0.5rem;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 html,
 body {
  margin: 0;
  padding: 0;
  height: 100%; /* Garantit que le HTML et le body prennent toute la hauteur */
- overflow: hidden; /* Cache les barres de défilement globales */
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ overflow-x: hidden;
 }
 
 body {
- font-family: Arial, sans-serif;
  display: flex;
  flex-direction: column;
  justify-content: space-between;
  align-items: center;
- background-color: #f7f7f7;
+ background-color: #f5f7fa;
  min-height: 100vh; /* Garantit que la hauteur du body occupe toute la hauteur de la fenêtre */
 }
 
 header {
- background-color: #29055b; /* Mauve foncé */
+ background-color: var(--primary); /* Mauve plus moderne */
  color: white;
  width: 100%; /* L'entête occupe toute la largeur de l'écran */
- padding: 40px;
+ padding: 20px 0;
  text-align: center;
  font-size: 24px;
+ box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 main {
- width: 80%;
+ width: 90%;
  padding: 20px;
  display: flex;
  flex-direction: column;
@@ -41,34 +56,39 @@ main {
  justify-content: space-between; /* Aligne le titre et le bouton */
  width: 100%;
  align-items: center;
- margin-bottom: 20px;
+ margin-bottom: 30px;
+ padding: 0 20px;
 }
 
 h1 {
  text-align: left;
  margin: 0;
  font-size: 28px;
- width: 70%; /* Prend 70% de la largeur disponible pour que le bouton ne soit pas trop près */
+ font-weight: 600;
+ color: #333;
 }
 
 #button-container {
  display: flex;
- justify-content: flex-end;
- width: 30%; /* Le bouton prend 30% de la largeur de l'écran */
+ gap: 10px;
 }
 
-#add-button {
- background-color: #29055b; /* Mauve foncé */
+#add-button, #add-button-priority, #add-button-status {
+ background-color: #6a1b9a; /* Mauve plus vif */
  color: white;
  border: none;
- padding: 15px 30px;
- font-size: 16px;
+ padding: 12px 20px;
+ font-size: 14px;
  cursor: pointer;
- border-radius: 5px;
+ border-radius: 4px;
+ transition: all 0.3s ease;
+ box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-#add-button:hover {
- background-color: #5a1b87; /* Légèrement plus clair que le mauve foncé */
+#add-button:hover, #add-button-priority:hover, #add-button-status:hover {
+ background-color: #8e24aa; /* Plus clair au survol */
+ transform: translateY(-2px);
+ box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 #columns {
@@ -77,19 +97,37 @@ h1 {
  width: 100%; /* Les 4 colonnes occupent toute la largeur disponible */
  gap: 20px;
  overflow-x: auto; /* Ajoute un scroll horizontal seulement si nécessaire */
- /*border: 2px solid #29055b;*/
+ padding: 10px 0;
 }
 
 .column {
  background-color: #fff;
- padding: 10px;
- border-radius: 5px;
- box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+ padding: 15px;
+ border-radius: 8px;
+ box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
  width: 24%; /* Chaque colonne occupe 24% de la largeur disponible */
- min-height: 300px;
- max-height: 500px; /* Définir une hauteur maximale pour éviter que la colonne ne soit trop grande */
+ min-height: 400px;
+ max-height: 600px; /* Définir une hauteur maximale pour éviter que la colonne ne soit trop grande */
  overflow-y: auto; /* Activer le défilement vertical lorsque le contenu dépasse */
  flex-grow: 1; /* S'assure que la colonne s'adapte bien à l'espace disponible */
+ border-top: 4px solid;
+ transition: all 0.3s ease;
+}
+
+#todo-column {
+ border-top-color: #f44336; /* Rouge pour TODO */
+}
+
+#in-progress-column {
+ border-top-color: #ff9800; /* Orange pour IN PROGRESS */
+}
+
+#in-review-column {
+ border-top-color: #2196f3; /* Bleu pour IN REVIEW */
+}
+
+#done-column {
+ border-top-color: #4caf50; /* Vert pour DONE */
 }
 
 .column h2 {
@@ -98,90 +136,224 @@ h1 {
  top: 0; /* Aligne l'en-tête en haut de la colonne */
  background-color: #fff; /* Fond blanc pour l'en-tête */
  z-index: 1; /* S'assure que l'en-tête est au-dessus du contenu */
+ padding: 10px 0;
+ margin-top: 0;
+ font-weight: 600;
+ color: #333;
+ border-bottom: 1px solid #eee;
 }
 
 ul {
  list-style-type: none;
  padding: 0;
+ margin-top: 15px;
 }
 
 li {
- display: flex;
- align-items: center;
- gap: 10px;
- padding: 10px 0;
- margin: 5px 0;
- border: 1px solid #ddd; /* Encadrement gris pour les tâches */
- border-radius: 5px; /* Coins arrondis */
- background-color: #fff; /* Fond blanc pour chaque tâche */
- cursor: pointer; /* Change le curseur en main au survol */
- transition: background-color 0.3s, transform 0.3s; /* Transition douce pour les changements */
+ margin: 10px 0;
+ border-radius: 6px;
+ background-color: #fff;
+ box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+ cursor: pointer;
+ transition: all 0.2s ease;
+ overflow: hidden;
 }
 
 li:hover {
- background-color: #f0f0f0; /* Change de couleur au survol */
- transform: scale(1.02); /* Effet de zoom léger au survol */
+ transform: translateY(-3px);
+ box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-input[type="checkbox"] {
- transform: scale(1.2);
+.task-item {
+ padding: 15px;
+ display: flex;
+ flex-direction: column;
+ gap: 8px;
+}
+
+.task-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+}
+
+.task-title {
+ font-weight: 600;
+ font-size: 16px;
+ color: #333;
+ margin: 0;
+}
+
+.task-priority {
+ font-size: 12px;
+ padding: 3px 8px;
+ border-radius: 12px;
+ font-weight: 500;
+}
+
+.priority-low {
+ background-color: #e8f5e9;
+ color: #2e7d32;
+}
+
+.priority-medium {
+ background-color: #fff8e1;
+ color: #ff8f00;
+}
+
+.priority-high {
+ background-color: #ffebee;
+ color: #c62828;
+}
+
+.task-description {
+ font-size: 14px;
+ color: #666;
+ margin: 5px 0;
+}
+
+.task-footer {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-top: 5px;
+ font-size: 12px;
+ color: #888;
+}
+
+.task-deadline {
+ display: flex;
+ align-items: center;
+ gap: 5px;
+}
+
+/* Style des actions */
+.task-actions {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .task-actions button {
+    background: transparent;
+    border: none;
+    color: #555;
+    font-size: 18px;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+  
+  .task-actions button:hover {
+    color: #ffcc00;
+    transform: scale(1.1);
+  }
+  
+  .task-actions .fas {
+    pointer-events: none;
+  }
+  
+  
+  
+
+.task-edit, .task-delete {
+ background: none;
+ border: none;
+ cursor: pointer;
+ padding: 3px;
+ transition: all 0.2s;
+}
+
+.task-edit:hover {
+ color: #2196f3;
+}
+
+.task-delete:hover {
+ color: #f44336;
 }
 
 footer {
  width: 100%; /* Le pied de page prend toute la largeur */
  text-align: center;
- padding: 40px;
- background-color: #29055b; /* Mauve foncé */
+ padding: 20px;
+ background-color: #4a148c; /* Mauve plus moderne */
  color: white;
  position: relative;
  bottom: 0; /* Le pied de page est collé en bas */
-}
-
-/* Nouveau style pour la colonne "IN_REVIEW" */
-#in-review-column {
- background-color: #fff; /* Même couleur de fond que les autres colonnes */
-}
-
-#in-review-list {
- background-color: #fff; /* Enlever tout fond spécifique */
+ margin-top: 40px;
 }
 
 /* Styles pour le modal (fenêtre pop-up) */
 .modal {
- display: none; /* Masque le modal par défaut */
- position: fixed; /* Reste à la même position même si on fait défiler la page */
- z-index: 1; /* S'assure que le modal est au-dessus du contenu */
+ display: none;
+ position: fixed;
+ z-index: 1000;
  left: 0;
  top: 0;
- width: 100%; /* Prend toute la largeur de l'écran */
- height: 100%; /* Prend toute la hauteur de l'écran */
- background-color: rgba(0, 0, 0, 0.5); /* Fond sombre avec transparence */
+ width: 100%;
+ height: 100%;
+ overflow: auto;
+ background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
  background-color: #fff;
+ margin: 5% auto;
  padding: 20px;
- border-radius: 10px;
- width: 400px;
- margin: 100px auto; /* Centrer le modal */
+ border-radius: 8px;
  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+ width: 100%;
+ height: 100%; 
+ max-width: 600px;
+ overflow-y: auto;
 }
 
-.close-btn {
- color: #aaa;
- font-size: 30px;
+/* Assurez-vous que tous les éléments du formulaire sont visibles */
+.modal-content form {
+ display: flex;
+ flex-direction: column;
+ gap: 5px;
+ 
+ position: relative;
+}
+
+/* Style pour les boutons du formulaire */
+.form-buttons {
+ display: flex;
+ justify-content: space-between; 
+ gap: 5px;
+}
+
+#edit-task-button {
+ background-color: #4CAF50;
+ color: white;
+ border: none;
+ padding: 10px 20px;
+ font-size: 16px;
  font-weight: bold;
- position: absolute;
- top: 10px;
- right: 20px;
  cursor: pointer;
+ border-radius: 4px;
+ transition: all 0.3s ease;
+ flex: 1;
 }
 
-.close-btn:hover,
-.close-btn:focus {
- color: black;
- text-decoration: none;
+#edit-task-button:hover {
+ background-color: #45a049;
+}
+
+#delete-task {
+ background-color: #f44336;
+ color: white;
+ border: none;
+ padding: 10px 20px;
+ font-size: 16px;
+ font-weight: bold;
  cursor: pointer;
+ border-radius: 4px;
+ transition: all 0.3s ease;
+ flex: 1;
+}
+
+#delete-task:hover {
+ background-color: #d32f2f;
 }
 
 form {
@@ -190,89 +362,282 @@ form {
 }
 
 form div {
- margin-bottom: 10px;
+ margin-bottom: 15px;
 }
 
 label {
- font-weight: bold;
+ font-weight: 500;
+ color: #555;
+ margin-bottom: 5px;
+ display: block;
 }
 
 input,
 textarea,
 select {
- padding: 10px;
- margin-top: 3px;
+ padding: 12px;
  width: 100%;
  border: 1px solid #ddd;
  border-radius: 5px;
+ font-family: inherit;
+ font-size: 14px;
+ transition: border 0.2s;
 }
 
-button {
- padding: 10px 15px;
- background-color: #29055b; /* Mauve foncé */
+input:focus,
+textarea:focus,
+select:focus {
+ border-color: #6a1b9a;
+ outline: none;
+ box-shadow: 0 0 0 2px rgba(106, 27, 154, 0.2);
+}
+
+button[type="submit"], button[type="button"] {
+ padding: 12px 20px;
+ background-color: #6a1b9a;
  color: white;
  border: none;
  border-radius: 5px;
  cursor: pointer;
+ font-weight: 500;
+ transition: all 0.3s;
+ margin-top: 10px;
 }
 
-button:hover {
- background-color: #5a1b87; /* Légèrement plus clair que le mauve foncé */
+button[type="submit"]:hover, button[type="button"]:hover {
+ background-color: #8e24aa;
 }
 
-textarea {
- resize: none; /* Empêche le redimensionnement du textarea */
+#error-msg, #error-msg-date, #edit-error-msg, #edit-error-msg-date {
+ font-size: 12px;
+ color: #f44336;
+ margin-top: 5px;
 }
 
-#description,
-#title,
-#due-date {
- width: 95%;
-}
-
-#error-msg {
- font-size: 12px; /* Réduit la taille du texte */
- color: red; /* Définit la couleur du texte en rouge */
- font-style: italic; /* Met le texte en italique */
- margin-top: 5px; /* Ajoute un petit espace au-dessus du message d'erreur */
-}
-
-#error-msg-date {
- font-size: 12px; /* Réduit la taille du texte */
- color: red; /* Définit la couleur du texte en rouge */
- font-style: italic; /* Met le texte en italique */
- margin-top: 5px; /* Ajoute un petit espace au-dessus du message d'erreur */
-}
-
-header {
- background-color: #29055b; /* Mauve foncé */
+/* Style spécial pour le bouton Modifier dans le modal d'édition */
+/* #edit-task-button {
+ background-color: #ff5722;
  color: white;
- width: 100%;
- padding: 40px;
- text-align: center;
- font-size: 24px;
-}
-
-#header-content {
- display: flex;
- justify-content: space-between; /* Aligne le titre à gauche et les liens à droite */
- align-items: center;
- width: 100%;
-}
-
-#header-title {
- padding-left: 40px;
- font-size: 24px;
-}
-
-#header-links a {
- padding: 40px;
- color: white;
- text-decoration: none;
- margin-left: 20px;
+ border: none;
+ padding: 15px 30px;
  font-size: 18px;
+ font-weight: bold;
+ text-transform: uppercase;
+ cursor: pointer;
+ border-radius: 4px;
+ box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+ transition: all 0.3s ease;
+ display: block !important;
+ visibility: visible !important;
+ width: 100%;
+ margin-bottom: 10px;
+ letter-spacing: 2px;
 }
 
-#header-links a:hover {
- text-decoration: underline;
+#edit-task-button:hover {
+ background-color: #e64a19;
+ transform: translateY(-3px);
+ box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+} */
+
+/* Styles pour le modal d'historique */
+#history-container {
+ max-height: 400px;
+ overflow-y: auto;
+ margin-top: 20px;
+}
+
+#history-table {
+ width: 100%;
+ border-collapse: collapse;
+ font-size: 14px;
+}
+
+#history-table th, #history-table td {
+ padding: 10px;
+ text-align: left;
+ border-bottom: 1px solid #ddd;
+}
+
+#history-table th {
+ background-color: #f5f5f5;
+ font-weight: bold;
+ position: sticky;
+ top: 0;
+ z-index: 10;
+}
+
+#history-table tr:hover {
+ background-color: #f9f9f9;
+}
+
+/* Style pour la colonne des détails */
+#history-table td:nth-child(4) {
+ max-width: 300px;
+ overflow-wrap: break-word;
+ word-wrap: break-word;
+ font-size: 13px;
+ color: #555;
+ padding: 10px 15px;
+ line-height: 1.4;
+}
+
+/* Mise en évidence des changements dans les détails */
+#history-table td:nth-child(4) strong {
+ font-weight: bold;
+ color: #333;
+}
+
+/* Styles pour les différents types d'entrées d'historique */
+.history-create td:nth-child(2) {
+ color: #4CAF50;
+ font-weight: bold;
+}
+
+.history-update td:nth-child(2) {
+ color: #2196F3;
+ font-weight: bold;
+}
+
+.history-delete td:nth-child(2) {
+ color: #f44336;
+ font-weight: bold;
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+ #columns {
+  flex-wrap: wrap;
+ }
+ 
+ .column {
+  width: 48%;
+  margin-bottom: 20px;
+ }
+}
+
+@media (max-width: 768px) {
+ .column {
+  width: 100%;
+ }
+ 
+ #button-container {
+  flex-direction: column;
+ }
+ 
+ .modal-content {
+  width: 90%;
+ }
+}
+
+/* Styles pour les boutons flottants dans le modal d'édition */
+.floating-buttons {
+ position: fixed;
+ bottom: 20px;
+ left: 0;
+ right: 0;
+ display: flex;
+ flex-direction: column;
+ gap: 10px;
+ padding: 20px;
+ z-index: 1001;
+ width: 80%;
+ max-width: 500px;
+ margin: 0 auto;
+}
+
+.big-button {
+ padding: 15px 20px;
+ font-size: 18px;
+ font-weight: bold;
+ text-transform: uppercase;
+ border: none;
+ border-radius: 8px;
+ cursor: pointer;
+ transition: all 0.3s ease;
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+ letter-spacing: 2px;
+ text-align: center;
+ width: 100%;
+}
+
+.modify-button {
+ background-color: #ff5722;
+ color: white;
+}
+
+.modify-button:hover {
+ background-color: #e64a19;
+ transform: translateY(-3px);
+ box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.delete-button {
+ background-color: #f44336;
+ color: white;
+}
+
+.delete-button:hover {
+ background-color: #d32f2f;
+ transform: translateY(-3px);
+ box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Styles pour les filtres */
+#filters-container {
+ display: flex;
+ flex-wrap: wrap;
+ align-items: center;
+ gap: 15px;
+ background-color: #f5f5f5;
+ padding: 15px;
+ margin-bottom: 20px;
+ border-radius: 5px;
+ box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.filter-group {
+ display: flex;
+ align-items: center;
+ gap: 8px;
+}
+
+.filter-group label {
+ font-weight: bold;
+ color: #333;
+}
+
+.filter-group select {
+ padding: 8px 12px;
+ border: 1px solid #ddd;
+ border-radius: 4px;
+ background-color: white;
+ font-size: 14px;
+}
+
+#apply-filters, #reset-filters {
+ padding: 8px 15px;
+ border: none;
+ border-radius: 4px;
+ cursor: pointer;
+ font-weight: bold;
+ transition: all 0.3s ease;
+}
+
+#apply-filters {
+ background-color: #4CAF50;
+ color: white;
+}
+
+#apply-filters:hover {
+ background-color: #45a049;
+}
+
+#reset-filters {
+ background-color: #f44336;
+ color: white;
+}
+
+#reset-filters:hover {
+ background-color: #d32f2f;
 }

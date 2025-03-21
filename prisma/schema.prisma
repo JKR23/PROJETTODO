@@ -1,7 +1,7 @@
 // Configuration de la source de données et du générateur de client Prisma
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./tododev.db"
 }
 
 generator client {
@@ -11,7 +11,7 @@ generator client {
 // Modèle pour l'Utilisateur unique (id = 1)
 model User {
   id            Int       @id @default(autoincrement()) // L'utilisateur unique
-  username      String    @default("Utilisateur1") // Utilisateur par défaut
+  username      String    @unique @default("Utilisateur1") // Utilisateur par défaut
   password      String    @default("1234")
   tasks         Task[]    // Tâches attribuées à cet utilisateur unique
   createdAt     DateTime  @default(now())
@@ -45,6 +45,7 @@ model History {
   modifiedAt  DateTime  @default(now()) // Date de la modification
   modifiedBy  Int       // ID de l'utilisateur ayant modifié (ID = 1 pour ce projet)
   action      String?
+  details     String?   // Détails de la modification (ce qui a été changé)
 }
 
 // Modèle pour les priorités de tâches (Priority)
