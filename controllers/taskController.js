@@ -18,16 +18,31 @@ export const createTask = async (req, res) => {
 
   const validPriorityId = parseInt(priorityId, 10);
   const validStatusId = parseInt(statusId, 10);
+  const validUserId = parseInt(userId, 10);
 
   console.log(
-   `Validating priority ID: ${validPriorityId}, status ID: ${validStatusId}`
+   `Validating priority ID: ${validPriorityId}, status ID: ${validStatusId}, user ID: ${validUserId}`
   );
 
-  if (isNaN(validPriorityId) || isNaN(validStatusId)) {
+  if (isNaN(validPriorityId) || isNaN(validStatusId) || isNaN(validUserId)) {
    console.error(
-    `Invalid priority ID or status ID. Received: priority=${priorityId}, status=${statusId}`
+    `Invalid ID values. Received: priority=${priorityId}, status=${statusId}, user=${userId}`
    );
-   return res.status(400).json({ error: "Invalid priority or status ID" });
+   return res.status(400).json({ error: "Valeurs d'ID invalides" });
+  }
+
+  // Vérifier que deadline est une date valide
+  let validDeadline = deadline;
+  if (!(deadline instanceof Date) && deadline) {
+   try {
+    validDeadline = new Date(deadline);
+    if (isNaN(validDeadline.getTime())) {
+     throw new Error("Date invalide");
+    }
+   } catch (error) {
+    console.error(`Invalid deadline date. Received: ${deadline}`);
+    return res.status(400).json({ error: "La date limite doit être une date valide" });
+   }
   }
 
   console.log("Calling taskModel.createTask with the following parameters:", {
@@ -35,8 +50,8 @@ export const createTask = async (req, res) => {
    description,
    validPriorityId,
    validStatusId,
-   deadline,
-   userId,
+   validDeadline,
+   validUserId,
   });
 
   const task = await taskModel.createTask(
@@ -44,8 +59,8 @@ export const createTask = async (req, res) => {
    description,
    validPriorityId,
    validStatusId,
-   deadline,
-   userId
+   validDeadline,
+   validUserId
   );
 
   console.log("Task created successfully:", task);
@@ -107,6 +122,9 @@ export const updateTask = async (req, res) => {
    req.body;
 
   id = parseInt(id);
+  const validPriorityId = parseInt(priorityId, 10);
+  const validStatusId = parseInt(statusId, 10);
+  const validUserId = parseInt(userId, 10);
 
   if (isNaN(id)) {
    return res
@@ -114,16 +132,42 @@ export const updateTask = async (req, res) => {
     .json({ error: "L'ID de la tâche doit être un entier valide." });
   }
 
-  if (isNaN(userId)) {
+  if (isNaN(validUserId)) {
    return res
     .status(400)
     .json({ error: "L'ID de l'utilisateur doit être un entier valide." });
   }
 
-  console.log(`Updating task ID: ${id} for user ID: ${userId}`);
+  if (isNaN(validPriorityId)) {
+   return res
+    .status(400)
+    .json({ error: "L'ID de priorité doit être un entier valide." });
+  }
 
-  const statusExists = await taskModel.checkStatusExists(statusId);
-  const priorityExists = await taskModel.checkPriorityExists(priorityId);
+  if (isNaN(validStatusId)) {
+   return res
+    .status(400)
+    .json({ error: "L'ID de statut doit être un entier valide." });
+  }
+
+  // Vérifier que deadline est une date valide
+  let validDeadline = deadline;
+  if (!(deadline instanceof Date) && deadline) {
+   try {
+    validDeadline = new Date(deadline);
+    if (isNaN(validDeadline.getTime())) {
+     throw new Error("Date invalide");
+    }
+   } catch (error) {
+    console.error(`Invalid deadline date. Received: ${deadline}`);
+    return res.status(400).json({ error: "La date limite doit être une date valide" });
+   }
+  }
+
+  console.log(`Updating task ID: ${id} for user ID: ${validUserId}`);
+
+  const statusExists = await taskModel.checkStatusExists(validStatusId);
+  const priorityExists = await taskModel.checkPriorityExists(validPriorityId);
 
   if (!statusExists) {
    return res.status(400).json({ error: "Le statusId fourni n'existe pas." });
@@ -136,10 +180,10 @@ export const updateTask = async (req, res) => {
   const updatedData = {
    title,
    description,
-   priorityId,
-   statusId,
-   userId,
-   deadline: new Date(deadline),
+   priorityId: validPriorityId,
+   statusId: validStatusId,
+   userId: validUserId,
+   deadline: validDeadline,
   };
 
   console.log("Updating task with the following data:", updatedData);
@@ -148,7 +192,7 @@ export const updateTask = async (req, res) => {
 
   console.log("Task updated successfully:", updatedTask);
 
-  await historyModel.createHistory(updatedTask.id, userId, "UPDATE");
+  await historyModel.createHistory(updatedTask.id, validUserId, "UPDATE");
 
   res.status(200).json(updatedTask);
  } catch (error) {
@@ -208,11 +252,10 @@ export const getTasksByStatusName = async (req, res) => {
   // Récupération des tâches depuis le modèle en filtrant uniquement par statut
   const tasks = await taskModel.getTasksByStatusName(status);
 
+  // Même si aucune tâche n'est trouvée, on renvoie un tableau vide au lieu d'une erreur 404
   if (tasks.length === 0) {
    console.log(`Aucune tâche trouvée pour le statut: ${status}`);
-   return res
-    .status(404)
-    .json({ message: "Aucune tâche trouvée pour ce statut." });
+   return res.status(200).json([]); // Renvoyer un tableau vide avec code 200 au lieu de 404
   }
 
   // Log des tâches récupérées

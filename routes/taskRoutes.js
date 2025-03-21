@@ -21,24 +21,24 @@ router.post("/", createTask);
 // URL : http://localhost:5000/api/task/user/:id
 router.get("/", getTasks);
 
-// Récupérer une tâche par son ID
-// URL : http://localhost:5000/api/task/:id
-router.get("/:id", getTaskById);
-
 // Récupérer les tâches par statut
 // URL : http://localhost:5000/api/task/status/:status
 router.get("/status/:status", getTasksByStatusName);
 
-// Récupérer les tâches par statut ID
-// URL : http://localhost:5000/api/task/status/id/:statusId
-router.get("/status/id/:statusId", getTasksByIdStatus); // Nouvelle route ajoutée
+// Récupérer les tâches par ID de statut
+// URL : http://localhost:5000/api/task/statusId/:statusId
+router.get("/statusId/:statusId", getTasksByIdStatus);
 
-// Mettre à jour une tâche par son ID
+// Récupérer une tâche par son ID
+// URL : http://localhost:5000/api/task/:id
+router.get("/:id", getTaskById);
+
+// Mettre à jour une tâche
 // URL : http://localhost:5000/api/task/:id
 router.put("/:id", updateTask);
 
-// Supprimer une tâche par son ID
+// Supprimer une tâche
 // URL : http://localhost:5000/api/task/:id
 router.delete("/:id", deleteTask);
 
-export default router; // Exportation du router avec la syntaxe ES6
+export default router;

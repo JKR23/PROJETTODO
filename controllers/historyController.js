@@ -2,10 +2,10 @@ import * as historyModel from "../models/history.js";
 
 // Créer un historique pour une tâche
 export const createHistory = async (req, res) => {
- const { taskId, modifiedBy, action } = req.body;
+ const { taskId, modifiedBy, action, details } = req.body;
  try {
   console.log("Creating history for task ID:", taskId);
-  const history = await historyModel.createHistory(taskId, modifiedBy, action);
+  const history = await historyModel.createHistory(taskId, modifiedBy, action, details);
   console.log("History created:", history);
   res.status(201).json(history);
  } catch (error) {
