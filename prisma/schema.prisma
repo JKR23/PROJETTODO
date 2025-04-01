@@ -12,10 +12,21 @@ generator client {
 model User {
   id            Int       @id @default(autoincrement()) // L'utilisateur unique
   username      String    @default("Utilisateur1") // Utilisateur par défaut
+  email         String    @unique @default("default@example.com") // Ajout d'une valeur par défaut
   password      String    @default("1234")
   tasks         Task[]    // Tâches attribuées à cet utilisateur unique
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  roleId        Int       @default(1) // Ajout d'une valeur par défaut pour `roleId`
+  role          Role      @relation(fields: [roleId], references: [id]) // Relation avec le rôle
+}
+
+
+// Modèle pour un rôle (Role)
+model Role {
+  id     Int     @id @default(autoincrement()) // ID unique pour chaque rôle
+  name   String  @unique // Nom du rôle (Admin, User, Manager, etc.)
+  users  User[] // Liste des utilisateurs associés à ce rôle
 }
 
 // Modèle pour une tâche (Task)

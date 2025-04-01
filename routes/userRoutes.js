@@ -7,6 +7,7 @@ import {
  getUserById,
  updateUser,
  deleteUser,
+ loginUser,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -30,5 +31,9 @@ router.put("/:id", updateUser);
 // Supprimer un utilisateur par son ID
 // URL : http://localhost:5000/api/users/:id
 router.delete("/:id", deleteUser);
+
+// Route pour la connexion de l'utilisateur
+// URL : http://localhost:5000/api/users/login
+router.post("/login", loginUser);
 
 export default router;

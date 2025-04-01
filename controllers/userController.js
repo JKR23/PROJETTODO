@@ -86,3 +86,37 @@ export const deleteUser = async (req, res) => {
   res.status(500).json({ error: "Error deleting the user" });
  }
 };
+
+// Mettre à jour le rôle d'un utilisateur
+export const updateUserRole = async (req, res) => {
+ const { id } = req.params;
+ const { roleId } = req.body;
+ try {
+  console.log("Updating role for user with ID:", id, "New role ID:", roleId);
+  const updatedUser = await userModel.updateUserRole(
+   parseInt(id),
+   parseInt(roleId)
+  );
+  console.log("User role updated:", updatedUser);
+  res.status(200).json(updatedUser);
+ } catch (error) {
+  console.error("Error updating user role:", error);
+  res
+   .status(500)
+   .json({ error: "Erreur lors de la mise à jour du rôle de l'utilisateur" });
+ }
+};
+
+// Connexion de l'utilisateur
+export const loginUser = async (req, res) => {
+ const { email, password } = req.body;
+ try {
+  console.log("Logging in user with email:", email);
+  const user = await userModel.loginUser(email, password);
+  console.log("User logged in:", user);
+  res.status(200).json(user);
+ } catch (error) {
+  console.error("Error logging in user:", error);
+  res.status(401).json({ error: "Email ou mot de passe incorrect" });
+ }
+};

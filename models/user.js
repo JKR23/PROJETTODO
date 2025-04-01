@@ -1,15 +1,29 @@
 import { PrismaClient } from "@prisma/client";
 
+import bcrypt from "bcryptjs";
+
 const prisma = new PrismaClient();
 
-// Créer un utilisateur
-export const createUser = async (username, password) => {
+// Créer un utilisateur avec un rôle par défaut
+export const createUser = async (username, password, email) => {
  try {
   console.log("Creating a new user with username:", username);
+
+  // Récupérer le rôle "User" par défaut
+  const defaultRole = await prisma.role.findUnique({
+   where: { name: "User" },
+  });
+
+  if (!defaultRole) {
+   throw new Error("Default role 'User' not found");
+  }
+
   const user = await prisma.user.create({
    data: {
-    username: username, // Utilisateur passé en paramètre
-    password: password, // Mot de passe en clair passé en paramètre
+    username,
+    email,
+    password: await bcrypt.hash(password, 10),
+    roleId: defaultRole.id, // Attribuer le rôle "User" par défaut
    },
   });
   console.log("User created successfully:", user);
@@ -93,5 +107,54 @@ export const deleteUser = async (id) => {
  } catch (error) {
   console.error("Error deleting user with ID:", id, error);
   throw new Error("Error deleting user");
+ }
+};
+
+// Mettre à jour le rôle d'un utilisateur
+export const updateUserRole = async (userId, roleId) => {
+ try {
+  console.log(
+   "Updating role for user with ID:",
+   userId,
+   "New role ID:",
+   roleId
+  );
+  const updatedUser = await prisma.user.update({
+   where: { id: userId },
+   data: { roleId },
+  });
+  console.log("User role updated successfully:", updatedUser);
+  return updatedUser;
+ } catch (error) {
+  console.error("Error updating user role with ID:", userId, error);
+  throw new Error("Error updating user role");
+ }
+};
+
+// Connexion de l'utilisateur
+export const loginUser = async (email, password) => {
+ try {
+  console.log("Logging in user with email:", email);
+
+  // Récupérer l'utilisateur par son email
+  const user = await prisma.user.findUnique({
+   where: { email },
+  });
+
+  if (!user) {
+   throw new Error("User not found");
+  }
+
+  // Vérifier le mot de passe
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+   throw new Error("Invalid password");
+  }
+
+  console.log("User logged in successfully:", user);
+  return user;
+ } catch (error) {
+  console.error("Error logging in user:", error);
+  throw new Error("Error logging in user");
  }
 };
