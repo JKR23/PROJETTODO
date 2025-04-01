@@ -16,12 +16,16 @@ import compression from "compression";
 import cors from "cors";
 import cspOption from "./csp-options.js";
 
+<<<<<<< HEAD
 import session from "express-session";
 import memorystore from "memorystore";
 
 import passport from "passport";
 
 import "./authentification.js";
+=======
+
+>>>>>>> b0cf12c441c23ca4225e25c7d94d8d0d81bf833d
 
 // Création du serveur express
 const app = express();
@@ -125,9 +129,17 @@ app.use((request, response) => {
   .json({ error: `${request.originalUrl} Route introuvable.` });
 });
 
+// Middleware global pour gérer les erreurs serveur
+app.use((err, req, res, next) => {
+ console.error("Erreur serveur :", err);
+ res.status(500).json({ error: "Erreur interne du serveur." });
+});
+
+
 // Démarrage du serveur
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
- console.info("Serveur démarré :");
- console.info(`http://localhost:${PORT}`);
+ console.info(` Serveur démarré sur http://localhost:${PORT}`);
 });
+
+
