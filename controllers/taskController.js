@@ -192,6 +192,11 @@ export const deleteTask = async (req, res) => {
 //controller
 export const getTasksByStatusName = async (req, res) => {
  try {
+  // Ajout de logs pour le débogage
+  console.log("====== DÉBOGAGE DE LA ROUTE getTasksByStatusName ======");
+  console.log("Route appelée avec req.params:", req.params);
+  console.log("URL complète:", req.originalUrl);
+  
   // Récupération du statut à partir des paramètres de la requête
   const { status } = req.params;
   console.log("Fetching tasks with status:", status);

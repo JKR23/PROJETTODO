@@ -73,6 +73,7 @@ const updateTaskStatus = async (taskId, newStatus) => {
 // Récupérer et afficher les tâches
 const updateTaskList = async () => {
  try {
+  console.log("Démarrage de la mise à jour des listes de tâches");
   const statuses = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
   todoList.innerHTML = "";
   inProgressList.innerHTML = "";
@@ -80,34 +81,130 @@ const updateTaskList = async () => {
   doneList.innerHTML = "";
 
   for (const status of statuses) {
-   const response = await fetch(
-    `http://localhost:5000/api/task/status/${status}`
-   );
-   if (response.ok) {
-    const tasks = await response.json();
-    tasks.forEach((task) => {
-     const taskElement = createTaskElement(task);
-     switch (task.status.name) {
+   console.log(`Récupération des tâches avec le statut: ${status}`);
+   try {
+    const response = await fetch(
+     `http://localhost:5000/api/task/status/${status}`
+    );
+    console.log(`Réponse pour ${status}:`, response.status);
+    
+    if (response.ok) {
+     const tasks = await response.json();
+     console.log(`Tâches récupérées pour ${status}:`, tasks);
+     
+     if (tasks.length === 0) {
+      console.log(`Aucune tâche trouvée pour le statut ${status}`);
+      // Afficher un message "aucune tâche" dans la colonne correspondante
+      const emptyMessage = document.createElement("li");
+      emptyMessage.classList.add("empty-message");
+      emptyMessage.textContent = "Aucune tâche";
+      
+      switch (status) {
+       case "TODO":
+        todoList.appendChild(emptyMessage);
+        break;
+       case "IN_PROGRESS":
+        inProgressList.appendChild(emptyMessage);
+        break;
+       case "IN_REVIEW":
+        inReviewList.appendChild(emptyMessage);
+        break;
+       case "DONE":
+        doneList.appendChild(emptyMessage);
+        break;
+      }
+     } else {
+      // Ajouter les tâches dans leur liste respective
+      tasks.forEach((task) => {
+       console.log(`Création de l'élément pour la tâche:`, task);
+       const taskElement = createTaskElement(task);
+       
+       switch (task.status.name) {
+        case "TODO":
+         todoList.appendChild(taskElement);
+         break;
+        case "IN_PROGRESS":
+         inProgressList.appendChild(taskElement);
+         break;
+        case "IN_REVIEW":
+         inReviewList.appendChild(taskElement);
+         break;
+        case "DONE":
+         doneList.appendChild(taskElement);
+         break;
+       }
+      });
+     }
+    } else if (response.status === 404) {
+     console.log(`Aucune tâche trouvée pour le statut ${status}`);
+     // Afficher un message "aucune tâche" dans la colonne correspondante
+     const emptyMessage = document.createElement("li");
+     emptyMessage.classList.add("empty-message");
+     emptyMessage.textContent = "Aucune tâche";
+     
+     switch (status) {
       case "TODO":
-       todoList.appendChild(taskElement);
+       todoList.appendChild(emptyMessage);
        break;
       case "IN_PROGRESS":
-       inProgressList.appendChild(taskElement);
+       inProgressList.appendChild(emptyMessage);
        break;
       case "IN_REVIEW":
-       inReviewList.appendChild(taskElement);
+       inReviewList.appendChild(emptyMessage);
        break;
       case "DONE":
-       doneList.appendChild(taskElement);
+       doneList.appendChild(emptyMessage);
        break;
      }
-    });
-   } else {
-    console.error("Erreur lors de la récupération des tâches");
+    } else {
+     console.error(`Erreur lors de la récupération des tâches pour ${status}:`, response.status);
+     // Afficher un message d'erreur dans la colonne
+     const errorMessage = document.createElement("li");
+     errorMessage.classList.add("error-message");
+     errorMessage.textContent = `Erreur: ${response.status}`;
+     
+     switch (status) {
+      case "TODO":
+       todoList.appendChild(errorMessage);
+       break;
+      case "IN_PROGRESS":
+       inProgressList.appendChild(errorMessage);
+       break;
+      case "IN_REVIEW":
+       inReviewList.appendChild(errorMessage);
+       break;
+      case "DONE":
+       doneList.appendChild(errorMessage);
+       break;
+     }
+    }
+   } catch (statusError) {
+    console.error(`Erreur lors de la récupération des tâches pour ${status}:`, statusError);
+    // Afficher un message d'erreur dans la colonne
+    const errorMessage = document.createElement("li");
+    errorMessage.classList.add("error-message");
+    errorMessage.textContent = "Erreur de connexion au serveur";
+    
+    switch (status) {
+     case "TODO":
+      todoList.appendChild(errorMessage);
+      break;
+     case "IN_PROGRESS":
+      inProgressList.appendChild(errorMessage);
+      break;
+     case "IN_REVIEW":
+      inReviewList.appendChild(errorMessage);
+      break;
+     case "DONE":
+      doneList.appendChild(errorMessage);
+      break;
+    }
    }
   }
+  
+  console.log("Mise à jour des listes de tâches terminée");
  } catch (error) {
-  console.error("Erreur lors de la communication avec le serveur", error);
+  console.error("Erreur globale lors de la communication avec le serveur", error);
  }
 };
 

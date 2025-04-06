@@ -16,16 +16,16 @@ import compression from "compression";
 import cors from "cors";
 import cspOption from "./csp-options.js";
 
-<<<<<<< HEAD
+//HEAD
 import session from "express-session";
 import memorystore from "memorystore";
 
 import passport from "passport";
 
 import "./authentification.js";
-=======
 
->>>>>>> b0cf12c441c23ca4225e25c7d94d8d0d81bf833d
+
+//b0cf12c441c23ca4225e25c7d94d8d0d81bf833d
 
 // Création du serveur express
 const app = express();
@@ -65,8 +65,14 @@ app.use("/api/status", statusRoutes);
 app.use("/api/priority", priorityRoutes);
 app.use("/api/history", historyRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/task", taskRoutes); // Ajout des routes de réservation
+app.use("/api/task", taskRoutes); // Ajout des routes de tâches
 app.use("/api/roles", roleRoutes);
+
+// Log des routes enregistrées
+console.log('====== ROUTES DE L\'API ENREGISTRÉES ======');
+console.log('/api/task/status/:status -> getTasksByStatusName');
+console.log('/api/task/status/id/:statusId -> getTasksByIdStatus');
+console.log('/api/task/:id -> getTaskById');
 
 //route default
 app.get("/", (req, res) => {

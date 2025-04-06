@@ -14,6 +14,7 @@ if (process.env.NODE_ENV === "development") {
     scriptSrc: ["'self'", "'nonce-browser-sync'"],
     scriptSrcAttr: ["'none'"],
     styleSrc: ["'self'", "https:", "'unsafe-inline'"],
+    connectSrc: ["'self'", "localhost:5000", "http://localhost:5000"],
     upgradeInsecureRequests: [],
    },
   },

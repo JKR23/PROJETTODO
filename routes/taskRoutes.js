@@ -17,13 +17,9 @@ const router = express.Router();
 // URL : http://localhost:5000/api/task
 router.post("/", createTask);
 
-// Récupérer toutes les tâches de l'utilisateur
-// URL : http://localhost:5000/api/task/user/:id
+// Récupérer toutes les tâches
+// URL : http://localhost:5000/api/task
 router.get("/", getTasks);
-
-// Récupérer une tâche par son ID
-// URL : http://localhost:5000/api/task/:id
-router.get("/:id", getTaskById);
 
 // Récupérer les tâches par statut
 // URL : http://localhost:5000/api/task/status/:status
@@ -31,7 +27,11 @@ router.get("/status/:status", getTasksByStatusName);
 
 // Récupérer les tâches par statut ID
 // URL : http://localhost:5000/api/task/status/id/:statusId
-router.get("/status/id/:statusId", getTasksByIdStatus); // Nouvelle route ajoutée
+router.get("/status/id/:statusId", getTasksByIdStatus);
+
+// Récupérer une tâche par son ID
+// URL : http://localhost:5000/api/task/:id
+router.get("/:id", getTaskById);
 
 // Mettre à jour une tâche par son ID
 // URL : http://localhost:5000/api/task/:id
