@@ -204,15 +204,23 @@ const deleteTask = async (id) => {
  }
 };
 
-// Récupérer les tâches par statut le name
-// Récupérer les tâches par statut
 // Récupérer les tâches par statut en utilisant uniquement le nom du statut
 const getTasksByStatusName = async (statusName) => {
  try {
   // Log de début de la fonction avec les paramètres reçus
-  console.log(
-   `Début de la récupération des tâches avec le statut: ${statusName}`
-  );
+  console.log(`Début de la récupération des tâches avec le statut: ${statusName}`);
+
+  // Vérifier que le nom du statut existe dans la base de données
+  const statusExists = await prisma.status.findUnique({
+   where: { name: statusName },
+  });
+
+  if (!statusExists) {
+   console.log(`Statut ${statusName} non trouvé dans la base de données`);
+   throw new Error(`Le statut ${statusName} n'existe pas dans la base de données`);
+  }
+
+  console.log(`Statut ${statusName} trouvé dans la base de données:`, statusExists);
 
   // Récupération des tâches dans la base de données
   const tasks = await prisma.task.findMany({
@@ -222,25 +230,27 @@ const getTasksByStatusName = async (statusName) => {
     },
    },
    include: {
-    status: true, // Inclure les informations sur le statut, si nécessaire
+    status: true, // Inclure les informations sur le statut
+    priority: true, // Inclure les informations sur la priorité
+    user: true, // Inclure les informations sur l'utilisateur
    },
   });
 
   // Log des tâches trouvées
-  console.log(`Tâches trouvées avec le statut ${statusName}:`);
-  console.log(tasks);
+  console.log(`Nombre de tâches trouvées avec le statut ${statusName}: ${tasks.length}`);
+  if (tasks.length > 0) {
+   console.log("Exemple de première tâche:", tasks[0]);
+  }
 
   // Retourner les tâches récupérées
   return tasks;
  } catch (error) {
   // Log en cas d'erreur
-  console.error(
-   `Erreur lors de la récupération des tâches pour le statut: ${statusName}`
-  );
+  console.error(`Erreur lors de la récupération des tâches pour le statut: ${statusName}`);
   console.error("Détails de l'erreur:", error);
 
   // Lancer une exception avec un message d'erreur générique
-  throw new Error("Erreur lors de la récupération des tâches par statut");
+  throw new Error("Erreur lors de la récupération des tâches par statut: " + error.message);
  }
 };
 
