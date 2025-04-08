@@ -1,3 +1,4 @@
+//authentification.js
 import bcrypt from "bcrypt";
 import passport from "passport";
 import { Strategy } from "passport-local";

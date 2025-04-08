@@ -21,6 +21,6 @@ export const isEmailValid = (email) => {
 // verifier si le password est valide
 export const isPasswordValid = (password) =>
  password &&
- typeof email === "string" &&
+ typeof password === "string" &&
  password.length >= 8 &&
  password.length <= 16;

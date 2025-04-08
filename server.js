@@ -16,16 +16,12 @@ import compression from "compression";
 import cors from "cors";
 import cspOption from "./csp-options.js";
 
-<<<<<<< HEAD
 import session from "express-session";
 import memorystore from "memorystore";
 
 import passport from "passport";
 
 import "./authentification.js";
-=======
-
->>>>>>> b0cf12c441c23ca4225e25c7d94d8d0d81bf833d
 
 // Création du serveur express
 const app = express();
@@ -65,7 +61,7 @@ app.use("/api/status", statusRoutes);
 app.use("/api/priority", priorityRoutes);
 app.use("/api/history", historyRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/task", taskRoutes); // Ajout des routes de réservation
+app.use("/api/task", taskRoutes); // Ajout des routes de tâches
 app.use("/api/roles", roleRoutes);
 
 //route default
@@ -78,6 +74,14 @@ app.get("/", (req, res) => {
   titre: "TODO App",
   styles: ["css/style.css"],
   scripts: ["./js/main.js", "./js/validation.js"],
+ });
+});
+
+app.get("/connexion", (req, res) => {
+ res.render("connexion", {
+  titre: "Connexion",
+  styles: ["css/style.css", "css/connexion.css"],
+  scripts: ["./js/connexion.js"],
  });
 });
 
@@ -135,11 +139,8 @@ app.use((err, req, res, next) => {
  res.status(500).json({ error: "Erreur interne du serveur." });
 });
 
-
 // Démarrage du serveur
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
  console.info(` Serveur démarré sur http://localhost:${PORT}`);
 });
-
-
