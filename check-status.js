@@ -1,40 +1,41 @@
+import "dotenv/config";
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-async function checkStatuses() {
+async function checkAndCreateStatuses() {
   try {
-    console.log('Vérification des statuts dans la base de données...');
+    console.log('Vérification des statuts existants...');
     
-    // Récupérer tous les statuts
-    const statuses = await prisma.status.findMany();
-    console.log('Statuts trouvés:', statuses);
-    
-    // Vérifier si les statuts requis existent
+    // Liste des statuts nécessaires
     const requiredStatuses = ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE'];
     
+    // Récupération des statuts existants
+    const existingStatuses = await prisma.status.findMany();
+    console.log('Statuts existants:', existingStatuses);
+    
+    // Vérification et création des statuts manquants
     for (const statusName of requiredStatuses) {
-      const status = statuses.find(s => s.name === statusName);
+      const exists = existingStatuses.some(status => status.name === statusName);
       
-      if (!status) {
-        console.log(`Le statut ${statusName} n'existe pas. Création en cours...`);
-        await prisma.status.create({
+      if (!exists) {
+        console.log(`Le statut "${statusName}" n'existe pas. Création en cours...`);
+        const newStatus = await prisma.status.create({
           data: { name: statusName }
         });
-        console.log(`Statut ${statusName} créé avec succès.`);
+        console.log(`Statut "${statusName}" créé avec l'ID ${newStatus.id}`);
       } else {
-        console.log(`Le statut ${statusName} existe avec l'ID ${status.id}`);
+        console.log(`Le statut "${statusName}" existe déjà.`);
       }
     }
     
-    // Vérifier à nouveau après les modifications potentielles
-    const updatedStatuses = await prisma.status.findMany();
-    console.log('Statuts après vérification:', updatedStatuses);
+    console.log('Vérification et création des statuts terminée.');
     
   } catch (error) {
-    console.error('Erreur lors de la vérification des statuts:', error);
+    console.error('Erreur lors de la vérification/création des statuts:', error);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-checkStatuses(); 
+// Exécution de la fonction
+checkAndCreateStatuses(); 

@@ -15,31 +15,41 @@ import helmet from "helmet";
 import compression from "compression";
 import cors from "cors";
 import cspOption from "./csp-options.js";
-
-//HEAD
+import bcrypt from "bcrypt";
+import passport from "passport";
 import session from "express-session";
 import memorystore from "memorystore";
+import { createUser, getUserByEmail } from "./models/user.js";
 
-import passport from "passport";
-
+// Initialisation de passport
 import "./authentification.js";
-
-
-//b0cf12c441c23ca4225e25c7d94d8d0d81bf833d
 
 // Création du serveur express
 const app = express();
-app.engine("handlebars", engine()); //Pour informer express que l'on utilise handlebars
-app.set("view engine", "handlebars"); //Pour dire a express que le moteur de rendu est handlebars
-app.set("views", "./views"); //Pour dire a express ou se trouvent les vues
 
-// Ajout de middlewares
-app.use(helmet(cspOption));
+// Configuration du moteur de template
+app.engine("handlebars", engine({
+  helpers: {
+    // Fonction pour obtenir les initiales du nom d'utilisateur
+    initials: function(options) {
+      if (options.data.root.user) {
+        const username = options.data.root.user.username;
+        return username.charAt(0).toUpperCase();
+      }
+      return '';
+    }
+  }
+})); 
+app.set("view engine", "handlebars");
+app.set("views", "./views");
+
+// Middlewares de base
+app.use(json());
+app.use(express.urlencoded({ extended: true }));
 app.use(compression());
 app.use(cors());
-app.use(json());
 
-//middleware pour la session
+// Middleware pour la session
 const MemoryStore = memorystore(session);
 app.use(
  session({
@@ -52,34 +62,120 @@ app.use(
  })
 );
 
-// Ajout de middlewares pour passport
-// app.use(session({ ... });
-app.use(passport.initialize());
-app.use(passport.session());
-
 // Middleware intégré à Express pour gérer la partie statique du serveur
 app.use(express.static("public"));
 
-// Ajout des routes
-app.use("/api/status", statusRoutes);
-app.use("/api/priority", priorityRoutes);
-app.use("/api/history", historyRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/task", taskRoutes); // Ajout des routes de tâches
-app.use("/api/roles", roleRoutes);
+// Initialisation de passport
+app.use(passport.initialize());
+app.use(passport.session());
 
-// Log des routes enregistrées
-console.log('====== ROUTES DE L\'API ENREGISTRÉES ======');
-console.log('/api/task/status/:status -> getTasksByStatusName');
-console.log('/api/task/status/id/:statusId -> getTasksByIdStatus');
-console.log('/api/task/:id -> getTaskById');
+// Middleware pour rendre l'utilisateur disponible dans tous les templates
+app.use((req, res, next) => {
+  res.locals.user = req.user;
+  res.locals.isAdmin = req.user && req.user.roleId === 1; // Supposant que roleId=1 est admin
+  next();
+});
 
-//route default
-app.get("/", (req, res) => {
- if (!req.session.id_user) {
-  req.session.id_user = 123; //simulation d'un id
- }
+// Middleware pour protéger les routes qui nécessitent une authentification
+const ensureAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/connexion');
+};
 
+// Middleware pour protéger les routes admin
+const ensureAdmin = (req, res, next) => {
+  if (req.isAuthenticated() && req.user.roleId === 1) {
+    return next();
+  }
+  res.status(403).render('error', { 
+    titre: 'Accès refusé', 
+    styles: ["css/style.css"],
+    message: 'Vous n\'avez pas les autorisations nécessaires pour accéder à cette page.'
+  });
+};
+
+// Définir les routes d'authentification
+app.get("/connexion", (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect('/');
+  }
+  res.render("connexion", {
+    titre: "Connexion",
+    styles: ["css/style.css"],
+    scripts: ["./js/connexion.js"]
+  });
+});
+
+app.post("/connexion", passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/connexion'
+}));
+
+app.get("/inscription", (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect('/');
+  }
+  res.render("inscription", {
+    titre: "Inscription",
+    styles: ["css/style.css"],
+    scripts: ["./js/inscription.js"]
+  });
+});
+
+app.post("/inscription", async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    
+    console.log("Tentative d'inscription:", { username, email });
+    
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+      return res.status(400).json({ 
+        message: 'Un utilisateur avec cet email existe déjà' 
+      });
+    }
+    
+    // Créer l'utilisateur
+    await createUser(username, password, email);
+    console.log("Utilisateur créé avec succès");
+    
+    res.status(201).json({ 
+      message: 'Inscription réussie! Vous pouvez maintenant vous connecter.' 
+    });
+  } catch (error) {
+    console.error('Erreur lors de l\'inscription:', error);
+    res.status(500).json({ 
+      message: 'Une erreur est survenue lors de l\'inscription' 
+    });
+  }
+});
+
+app.get("/deconnexion", (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      console.error('Erreur lors de la déconnexion:', err);
+      return res.status(500).send('Erreur lors de la déconnexion');
+    }
+    res.redirect('/connexion');
+  });
+});
+
+// Ajouter helmet après les routes d'authentification pour éviter les problèmes de CSP
+// app.use(helmet(cspOption));
+
+// Routes API
+app.use("/api/status", ensureAuthenticated, statusRoutes);
+app.use("/api/priority", ensureAuthenticated, priorityRoutes);
+app.use("/api/history", ensureAuthenticated, historyRoutes);
+app.use("/api/users", ensureAuthenticated, userRoutes);
+app.use("/api/task", ensureAuthenticated, taskRoutes);
+app.use("/api/roles", ensureAdmin, roleRoutes);
+
+// Routes pages principales
+app.get("/", ensureAuthenticated, (req, res) => {
  res.render("index", {
   titre: "TODO App",
   styles: ["css/style.css"],
@@ -87,7 +183,7 @@ app.get("/", (req, res) => {
  });
 });
 
-app.get("/accueil", (req, res) => {
+app.get("/accueil", ensureAuthenticated, (req, res) => {
  res.render("index", {
   titre: "TODO App",
   styles: ["css/style.css"],
@@ -95,52 +191,80 @@ app.get("/accueil", (req, res) => {
  });
 });
 
-app.get("/history", (req, res) => {
+app.get("/history", ensureAuthenticated, (req, res) => {
  res.render("history", {
-  titre: "TODO App",
+  titre: "Historique",
   styles: ["css/style.css"],
   scripts: ["./js/main.js"],
  });
 });
 
-app.get("/status", (req, res) => {
+app.get("/status", ensureAuthenticated, (req, res) => {
  res.render("status", {
-  titre: "TODO App",
+  titre: "Statuts",
   styles: ["css/style.css"],
   scripts: ["./js/main.js"],
  });
 });
 
-app.get("/priority", (req, res) => {
+app.get("/priority", ensureAuthenticated, (req, res) => {
  res.render("priority", {
-  titre: "TODO App",
+  titre: "Priorités",
   styles: ["css/style.css"],
   scripts: ["./js/main.js"],
  });
 });
 
-app.get("/role", (req, res) => {
+app.get("/role", ensureAdmin, (req, res) => {
  res.render("role", {
-  titre: "TODO App",
+  titre: "Gestion des rôles",
   styles: ["css/style.css"],
   scripts: ["./js/main.js"],
  });
+});
+
+// Page de profil utilisateur
+app.get("/profile", ensureAuthenticated, (req, res) => {
+  res.render("profile", {
+    titre: "Mon profil",
+    styles: ["css/style.css"],
+    scripts: ["./js/profile.js"],
+  });
 });
 
 // Gestion des erreurs 404
 app.use((request, response) => {
  console.log(`Route non trouvée : ${request.originalUrl}`);
- response
-  .status(404)
-  .json({ error: `${request.originalUrl} Route introuvable.` });
+ 
+ // Si la route demandée commence par /api, retourner une réponse JSON
+ if (request.originalUrl.startsWith('/api')) {
+   return response.status(404).json({ error: `${request.originalUrl} Route introuvable.` });
+ }
+ 
+ // Sinon, rendre la page d'erreur
+ response.status(404).render('error', {
+   titre: 'Page introuvable',
+   styles: ["css/style.css"],
+   message: 'La page que vous avez demandée n\'existe pas.'
+ });
 });
 
 // Middleware global pour gérer les erreurs serveur
 app.use((err, req, res, next) => {
  console.error("Erreur serveur :", err);
- res.status(500).json({ error: "Erreur interne du serveur." });
+ 
+ // Si la requête est une API, retourner une erreur JSON
+ if (req.originalUrl.startsWith('/api')) {
+   return res.status(500).json({ error: "Erreur interne du serveur." });
+ }
+ 
+ // Sinon, rendre la page d'erreur
+ res.status(500).render('error', {
+   titre: 'Erreur serveur',
+   styles: ["css/style.css"],
+   message: 'Une erreur est survenue sur le serveur.'
+ });
 });
-
 
 // Démarrage du serveur
 const PORT = process.env.PORT || 5000;
