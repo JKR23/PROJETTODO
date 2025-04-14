@@ -1,4 +1,4 @@
-<html lang="en">
+<html lang="fr">
  <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,6 +7,8 @@
   {{#each styles}}
    <link rel="stylesheet" href={{this}} />
   {{/each}}
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
   {{#each scripts}}
    <script type="module" src={{this}}></script>
@@ -17,6 +19,17 @@
    <div id="header-content">
     <div id="header-title">TODO</div>
     <nav id="header-links">
+
+     <a href="/accueil">Accueil</a>
+     {{#if user}}
+      <a href="/status">Statuts</a>
+      <a href="/priority">Priorités</a>
+      <a href="/history">Historique</a>
+      {{#if isAdmin}}
+      <a href="/role">Rôles</a>
+      {{/if}}
+     {{/if}}
+
      <a href="/connexion">connexion</a>
      <a href="/accueil">accueil</a>
      <a href="/status">status</a>
@@ -24,7 +37,35 @@
      <a href="/history">history</a>
      <a href="/role">role</a>
      <a href="/deconnexion">deconnexion</a>
+
     </nav>
+    <div class="auth-links">
+     {{#if user}}
+      <div class="user-menu" id="user-menu">
+       <div class="user-profile">
+        <div class="user-avatar">
+         {{initials}}
+        </div>
+        <span class="user-name">{{user.username}}</span>
+        <span class="dropdown-icon"><i class="fas fa-chevron-down"></i></span>
+       </div>
+       <div class="dropdown-menu">
+        <a href="/profile" class="dropdown-item">
+         <i class="fas fa-user"></i> Mon profil
+        </a>
+        <a href="/settings" class="dropdown-item">
+         <i class="fas fa-cog"></i> Paramètres
+        </a>
+        <a href="/deconnexion" class="dropdown-item logout">
+         <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </a>
+       </div>
+      </div>
+     {{else}}
+      <a href="/connexion" class="auth-button">Connexion</a>
+      <a href="/inscription" class="auth-button">Inscription</a>
+     {{/if}}
+    </div>
    </div>
   </header>
 
@@ -32,5 +73,20 @@
    {{{body}}}
   </main>
   <footer>&copy;Group Seven7</footer>
+
+  <script>
+   // Script pour le menu déroulant utilisateur
+   const userMenu = document.getElementById('user-menu');
+   if (userMenu) {
+    userMenu.addEventListener('click', function(e) {
+     e.stopPropagation();
+     this.classList.toggle('active');
+    });
+    
+    document.addEventListener('click', function() {
+     userMenu.classList.remove('active');
+    });
+   }
+  </script>
  </body>
 </html>
