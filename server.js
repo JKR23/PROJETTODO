@@ -15,8 +15,12 @@ import helmet from "helmet";
 import compression from "compression";
 import cors from "cors";
 import cspOption from "./csp-options.js";
+
 import bcrypt from "bcrypt";
 import passport from "passport";
+
+
+
 import session from "express-session";
 import memorystore from "memorystore";
 import { createUser, getUserByEmail } from "./models/user.js";
@@ -76,6 +80,7 @@ app.use((req, res, next) => {
   next();
 });
 
+
 // Middleware pour protéger les routes qui nécessitent une authentification
 const ensureAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
@@ -112,6 +117,21 @@ app.post("/connexion", passport.authenticate('local', {
   successRedirect: '/',
   failureRedirect: '/connexion'
 }));
+
+// Ajout des routes
+app.use("/api/status", statusRoutes);
+app.use("/api/priority", priorityRoutes);
+app.use("/api/history", historyRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/task", taskRoutes); // Ajout des routes de tâches
+app.use("/api/roles", roleRoutes);
+
+//route default
+app.get("/", (req, res) => {
+ if (!req.session.id_user) {
+  req.session.id_user = 123; //simulation d'un id
+ }
+
 
 app.get("/inscription", (req, res) => {
   if (req.isAuthenticated()) {
@@ -183,7 +203,19 @@ app.get("/", ensureAuthenticated, (req, res) => {
  });
 });
 
+
 app.get("/accueil", ensureAuthenticated, (req, res) => {
+
+app.get("/connexion", (req, res) => {
+ res.render("connexion", {
+  titre: "Connexion",
+  styles: ["css/style.css", "css/connexion.css"],
+  scripts: ["./js/connexion.js"],
+ });
+});
+
+app.get("/accueil", (req, res) => {
+
  res.render("index", {
   titre: "TODO App",
   styles: ["css/style.css"],
@@ -271,5 +303,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
  console.info(` Serveur démarré sur http://localhost:${PORT}`);
 });
-
-

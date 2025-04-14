@@ -87,18 +87,18 @@ const updateTaskList = async () => {
      `http://localhost:5000/api/task/status/${status}`
     );
     console.log(`Réponse pour ${status}:`, response.status);
-    
+
     if (response.ok) {
      const tasks = await response.json();
      console.log(`Tâches récupérées pour ${status}:`, tasks);
-     
+
      if (tasks.length === 0) {
       console.log(`Aucune tâche trouvée pour le statut ${status}`);
       // Afficher un message "aucune tâche" dans la colonne correspondante
       const emptyMessage = document.createElement("li");
       emptyMessage.classList.add("empty-message");
       emptyMessage.textContent = "Aucune tâche";
-      
+
       switch (status) {
        case "TODO":
         todoList.appendChild(emptyMessage);
@@ -118,7 +118,7 @@ const updateTaskList = async () => {
       tasks.forEach((task) => {
        console.log(`Création de l'élément pour la tâche:`, task);
        const taskElement = createTaskElement(task);
-       
+
        switch (task.status.name) {
         case "TODO":
          todoList.appendChild(taskElement);
@@ -141,7 +141,7 @@ const updateTaskList = async () => {
      const emptyMessage = document.createElement("li");
      emptyMessage.classList.add("empty-message");
      emptyMessage.textContent = "Aucune tâche";
-     
+
      switch (status) {
       case "TODO":
        todoList.appendChild(emptyMessage);
@@ -157,12 +157,15 @@ const updateTaskList = async () => {
        break;
      }
     } else {
-     console.error(`Erreur lors de la récupération des tâches pour ${status}:`, response.status);
+     console.error(
+      `Erreur lors de la récupération des tâches pour ${status}:`,
+      response.status
+     );
      // Afficher un message d'erreur dans la colonne
      const errorMessage = document.createElement("li");
      errorMessage.classList.add("error-message");
      errorMessage.textContent = `Erreur: ${response.status}`;
-     
+
      switch (status) {
       case "TODO":
        todoList.appendChild(errorMessage);
@@ -179,12 +182,15 @@ const updateTaskList = async () => {
      }
     }
    } catch (statusError) {
-    console.error(`Erreur lors de la récupération des tâches pour ${status}:`, statusError);
+    console.error(
+     `Erreur lors de la récupération des tâches pour ${status}:`,
+     statusError
+    );
     // Afficher un message d'erreur dans la colonne
     const errorMessage = document.createElement("li");
     errorMessage.classList.add("error-message");
     errorMessage.textContent = "Erreur de connexion au serveur";
-    
+
     switch (status) {
      case "TODO":
       todoList.appendChild(errorMessage);
@@ -201,10 +207,13 @@ const updateTaskList = async () => {
     }
    }
   }
-  
+
   console.log("Mise à jour des listes de tâches terminée");
  } catch (error) {
-  console.error("Erreur globale lors de la communication avec le serveur", error);
+  console.error(
+   "Erreur globale lors de la communication avec le serveur",
+   error
+  );
  }
 };
 

@@ -1,18 +1,24 @@
 //Controllers/userController.js
 import * as userModel from "../models/user.js";
+/*import {
+ isDescriptionValid,
+ isEmailValid,
+ isPasswordValid,
+} from "../validation.js";*/
 
 // Créer un utilisateur
 export const registerUser = async (req, res) => {
  try {
-  const { username, password } = req.body; // On attend que le corps de la requête contienne ces informations
+  const { username, password, email } = req.body; // On attend que le corps de la requête contienne ces informations
 
   // Créer l'utilisateur avec le mot de passe en clair
   console.log("Registering new user with username:", username);
-  const user = await userModel.createUser(username, password); // Passer le mot de passe en clair
+  const user = await userModel.createUser(username, password, email); // Passer le mot de passe en clair
   console.log("User created:", user);
   res.status(201).json(user);
  } catch (error) {
   console.error("Error registering user:", error);
+
   res
    .status(500)
    .json({ error: "Erreur lors de la création de l'utilisateur" });
@@ -114,7 +120,7 @@ export const loginUser = async (req, res) => {
   console.log("Logging in user with email:", email);
   const user = await userModel.loginUser(email, password);
   console.log("User logged in:", user);
-  res.status(200).json(user);
+  res.status(200).json({ user, message: "utilisateur connecte avec succes" });
  } catch (error) {
   console.error("Error logging in user:", error);
   res.status(401).json({ error: "Email ou mot de passe incorrect" });
