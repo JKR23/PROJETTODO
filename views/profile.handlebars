@@ -1,0 +1,227 @@
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {{initials}}
+        </div>
+        <h1>Mon Profil</h1>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-info">
+            <div class="info-group">
+                <label>Nom d'utilisateur</label>
+                <p>{{user.username}}</p>
+            </div>
+            <div class="info-group">
+                <label>Email</label>
+                <p>{{user.email}}</p>
+            </div>
+            <div class="info-group">
+                <label>Rôle</label>
+                <p>{{#if isAdmin}}Administrateur{{else}}Utilisateur{{/if}}</p>
+            </div>
+            <div class="info-group">
+                <label>Inscrit depuis</label>
+                <p>{{user.createdAt}}</p>
+            </div>
+        </div>
+        
+        <div class="profile-actions">
+            <button class="btn-primary" id="edit-profile">Modifier mon profil</button>
+            <button class="btn-secondary" id="change-password">Changer mon mot de passe</button>
+        </div>
+    </div>
+    
+    <div class="stats-section">
+        <h2>Mes statistiques</h2>
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-icon todo-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>À faire</h3>
+                    <p class="stat-count" id="todo-count">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon progress-icon">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>En cours</h3>
+                    <p class="stat-count" id="progress-count">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon review-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>En révision</h3>
+                    <p class="stat-count" id="review-count">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon done-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Terminées</h3>
+                    <p class="stat-count" id="done-count">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-container {
+        padding: 2rem;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .profile-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: var(--accent-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 600;
+        color: white;
+        margin-right: 1.5rem;
+    }
+    
+    .profile-card {
+        background-color: var(--bg-column);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-soft);
+    }
+    
+    .profile-info {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .info-group label {
+        font-weight: 500;
+        color: var(--primary-dark);
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-group p {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+    
+    .profile-actions {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .btn-secondary {
+        background-color: #f5f5f5;
+        color: var(--text-dark);
+        border: 1px solid #ddd;
+        padding: 0.8rem 1.5rem;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: var(--transition-medium);
+    }
+    
+    .btn-secondary:hover {
+        background-color: #e0e0e0;
+        transform: translateY(-2px);
+    }
+    
+    .stats-section h2 {
+        margin-bottom: 1.5rem;
+        color: var(--primary-dark);
+    }
+    
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .stat-card {
+        background-color: var(--bg-column);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        box-shadow: var(--shadow-soft);
+        transition: var(--transition-medium);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-medium);
+    }
+    
+    .stat-icon {
+        font-size: 1.8rem;
+        margin-right: 1rem;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .todo-icon { background-color: #f44336; }
+    .progress-icon { background-color: #ff9800; }
+    .review-icon { background-color: #2196f3; }
+    .done-icon { background-color: #4caf50; }
+    
+    .stat-info h3 {
+        font-size: 0.9rem;
+        margin: 0 0 0.3rem 0;
+        color: var(--text-dark);
+    }
+    
+    .stat-count {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+        color: var(--primary-dark);
+    }
+    
+    @media (max-width: 900px) {
+        .profile-info {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 600px) {
+        .stats-cards {
+            grid-template-columns: 1fr;
+        }
+        
+        .profile-actions {
+            flex-direction: column;
+        }
+    }
+</style> 
