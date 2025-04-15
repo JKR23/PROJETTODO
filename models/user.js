@@ -9,13 +9,16 @@ export const createUser = async (username, password, email) => {
  try {
   console.log("Creating a new user with username:", username);
 
-  // Récupérer le rôle "User" par défaut
+  // Récupérer le rôle "USER" par défaut
   const defaultRole = await prisma.role.findUnique({
-   where: { name: "User" },
+   where: { name: "USER" },
   });
 
   if (!defaultRole) {
-   throw new Error("Default role 'User' not found");
+   console.error("Default role 'USER' not found. Available roles:");
+   const roles = await prisma.role.findMany();
+   console.log(roles);
+   throw new Error("Default role 'USER' not found");
   }
 
   const user = await prisma.user.create({
@@ -23,14 +26,14 @@ export const createUser = async (username, password, email) => {
     username,
     email,
     password: await bcrypt.hash(password, 10),
-    roleId: defaultRole.id, // Attribuer le rôle "User" par défaut
+    roleId: defaultRole.id, // Attribuer le rôle "USER" par défaut
    },
   });
   console.log("User created successfully:", user);
   return user;
  } catch (error) {
   console.error("Error creating user:", error);
-  throw new Error("Error creating user");
+  throw new Error("Error creating user: " + error.message);
  }
 };
 
@@ -65,14 +68,14 @@ export const getUserById = async (id) => {
 // Récupérer un utilisateur par son email (ici username)
 export const getUserByEmail = async (email) => {
  try {
-  console.log("Fetching user by email (username):", email);
+  console.log("Fetching user by email:", email);
   const user = await prisma.user.findUnique({
-   where: { username: email },
+   where: { email: email },
   });
   console.log("User found:", user);
   return user;
  } catch (error) {
-  console.error("Error fetching user by email (username):", email, error);
+  console.error("Error fetching user by email:", email, error);
   throw new Error("Error fetching user by email");
  }
 };
