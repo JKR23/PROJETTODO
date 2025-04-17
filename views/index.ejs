@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Ma ToDo List</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="box">
+    <h1>📋 Ma liste de tâches</h1>
+
+    <form action="/" method="post">
+      <input type="text" name="newItem" placeholder="Ajouter une tâche" autocomplete="off" required>
+      <button type="submit">Ajouter</button>
+    </form>
+
+    <ul>
+      <% todoItems.forEach(function(item) { %>
+        <li>
+          <form action="/delete" method="post">
+            <input type="checkbox" name="checkbox" value="<%= item._id %>" onChange="this.form.submit()">
+            <%= item.name %>
+          </form>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+</body>
+</html>
